@@ -55,7 +55,7 @@
                        (table-name T)
                        (add-between (table-columns T) ",")
                        (add-between (map quote-sql values) ",")))
-     ;;(printf "~s~n" S)
+     ;; (printf "~s~n" S)
      (query-exec (table-db T) S)]
     
     [(list (? table? T)

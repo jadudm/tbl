@@ -3,6 +3,7 @@
 (require table
          table/types
          table/util/util
+         table/util/sqlite
          db sql
          table/reading/gsheet
          )
@@ -37,6 +38,66 @@
   newT                           
   )
 
+(define (binop? s)
+  (member s '(+ - * / and AND & && or OR || |||| > < >= <= = ==)))
+(define (->binop s)
+  (case s
+    [(and & &&) 'AND]
+    [(or || ||||) 'OR]
+    [(==) '=]
+    [else s]))
+
+(define (->infix exp #:v [v false])
+  (match exp
+    [(? number? n) n]
+    [(? string-or-symbol? s) (if v
+                                 (quote-sql (->string s))
+                                 (->string s))
+                                 ]
+    [(list (? binop? op) lhs rhs)
+     (format "(~a ~a ~a)" (->infix lhs) (->binop op) (->infix rhs #:v true))]
+    ))
+
+(define flavorsT (read-gsheet "https://pult.us/u/flavors"))
+
+;; FIXME
+;; Is this
+;; * filter-rows
+;; * filter-table 
+;; * select-rows
+;; * subset
+;; * select (which is already taken by the sql library)
+;; * choose
+;; dplyr uses "filter()", which is taken by Racket.
+;; should I use "-table" on table operations?
+;; pull-from-table, filter-table, ... ?
+(define (filter-rows:Q T quotedQ)
+  (define Q (select (.*)
+                    #:from (TableRef:INJECT ,(table-name T))
+                    #:where (ScalarExpr:INJECT ,(->infix quotedQ))))
+  (define rows (query-rows (table-db T) Q))
+  (define newT (make-table (format "~a_filtered" (table-name T))
+                           (table-columns T)
+                           (table-types T)))
+  (for ([row rows])
+    ;; Drop the ROWID when inserting.
+    (add-row! newT (rest (vector->list row))))
+  newT)
+
+(define-syntax-rule (filter-rows T Q)
+  (filter-rows:Q T (quasiquote Q)))
+
+;; Gets all the rows as a list of lists.
+;; FIXME: This includes the ROWID. Should
+;; the ROWID be included when communicating back to the user?
+;; For now, I'm going to say NO, because the user didn't
+;; choose to put that value in their data.
+(define (get-rows T)
+  (define Q (select (.*) #:from (TableRef:INJECT ,(table-name T))))
+  (define rows (query-rows (table-db T) Q))
+  (map rest (map vector->list rows)))
+
+
 (module+ test
   (require rackunit/chk
            table/reading/gsheet
@@ -70,6 +131,25 @@
    ;; Does pick return a table with fewer columns?
    (column-count flavorsT) 3
    (column-count (pick flavorsT "age" "name")) 2
+
+   ;; All the rows where a condition holds true.
+   ;; Note that ROWID is not included when we ask for all of the rows.
+   (get-rows (filter-rows flavorsT (and (> age 3)
+                                        (or (= flavor "Mint")
+                                            (= flavor "Chocolate")))))
+   '(("Matt" 42 "Chocolate") ("Matthew" 9 "Mint"))
+
+   ;; Another check; essentially same as the previous
+   (row-count
+    (filter-rows flavorsT (and (> age 3)
+                               (or (= flavor "Mint")
+                                   (= flavor "Chocolate")))))
+   2
+   
+   ;; Check that we end up with a new table that only has
+   ;; six rows in it. It should still have 10 columns.
+   (row-count (filter-rows citiesT (= State "OH"))) 6
+   (column-count (filter-rows citiesT (= State "OH"))) 10
    
    ) ;; end of chk
 

@@ -1,15 +1,20 @@
 #lang info
 
 (define collection "table")
-(define version "0.0.1")
 
-(define deps '("db"
+(define scribblings '(("scribblings/table.scrbl"
+                       (multi-page)
+                       ("Data Tables, Simplified"))))
+
+(define deps '("base"
+               "db"
                "data-lib"
                "csv-reading"
                "gregor"
                "rackunit"
                "rackunit-chk"
-               "sql"
-               ))
+               "sql"))
 
-(define scribblings '(("scribblings/manual.scrbl")))
+(define pkg-desc "Documentation for \"table\"")
+
+(define pkg-authors '(jadudm))
