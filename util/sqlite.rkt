@@ -3,9 +3,6 @@
                        
 (provide (all-defined-out))
 
-(define (snoc o ls)
-  (reverse (cons o (reverse ls))))
-
 (define (clean-sql-table-name str)
   (regexp-replace* #px"[\\W]" str ""))
 

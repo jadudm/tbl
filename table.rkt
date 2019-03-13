@@ -2,6 +2,7 @@
 (require db sql
          table/types
          table/util/sqlite
+         table/util/util
          csv-reading
          net/url)
 
@@ -46,7 +47,7 @@
                        (table-name T)
                        (add-between (table-columns T) ",")
                        (add-between (map quote-sql values) ",")))
-     ;; (printf "~s~n" S)
+     ;;(printf "~s~n" S)
      (query-exec (table-db T) S)]
     
     [(list (? table? T)
@@ -62,7 +63,7 @@
   (length (table-columns T)))
 
 (define (row-count T)
-  (query-value "SELECT count(*) FROM ~a" (table-name T)))
+  (query-value (table-db T) (format "SELECT count(*) FROM ~a" (table-name T))))
 
      
 

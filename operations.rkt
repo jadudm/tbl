@@ -6,6 +6,9 @@
          db sql
          table/reading/gsheet
          )
+
+(provide (all-defined-out))
+
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
 ;; PULL
 (define (pull T column)
@@ -36,10 +39,15 @@
 
 (module+ test
   (require rackunit/chk
-           table/reading/gsheet)
+           table/reading/gsheet
+           table/reading/csv
+           table/test/files
+           math)
+  
   (define flavorsT (read-gsheet "https://pult.us/u/flavors"))
   (define citiesT (read-gsheet "http://bit.ly/cities-csv"))
-
+  (define gunsT (read-csv gun-deaths-csv))
+  
   (chk
    ;; What are the ages in the flavors GSheet?
    (pull flavorsT 'age)  '(42 9 5)
@@ -61,6 +69,10 @@
    ;; Does pick return a table with fewer columns?
    (column-count flavorsT) 3
    (column-count (pick flavorsT "age" "name")) 2
+
+   ;; What about a bigger table?
+   (length (pull gunsT 'age)) 100798
+   (row-count gunsT) 100798
    
    ) ;; end of chk
 
