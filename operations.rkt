@@ -58,8 +58,6 @@
      (format "(~a ~a ~a)" (->infix lhs) (->binop op) (->infix rhs #:v true))]
     ))
 
-(define flavorsT (read-gsheet "https://pult.us/u/flavors"))
-
 ;; FIXME
 ;; Is this
 ;; * filter-rows
@@ -115,7 +113,7 @@
    ;; What if I use a string for the column name?
    (pull flavorsT "age") '(42 9 5)
 
-   ;; What are the cities in the table?
+   ;; What are the cities in the tbl?
    ;; Placed the list of cities in a test/data file.
    (pull citiesT "City") all-cities
    
@@ -123,7 +121,7 @@
    ;; What is the sum of the latitude degrees?
    ;; This checks that the integers came in as integers.
    (apply + (pull citiesT "LatD")) 4969
-   ;; How many times does Ohio show up in the table?
+   ;; How many times does Ohio show up in the tbl?
    (length (filter (λ (s) (equal? s "OH")) (pull citiesT "State"))) 6
    ;; What about Maine? Oh. Maine gets no love.
    (length (filter (λ (s) (equal? s "ME")) (pull citiesT "State"))) 0
@@ -158,7 +156,7 @@
     (define gunsT (read-csv gun-deaths-csv))
     (chk
      
-   ;; What about a bigger table?
+   ;; What about a bigger tbl?
    (length (pull gunsT 'age)) 100798
    (row-count gunsT) 100798
    ;; The columns in this table are

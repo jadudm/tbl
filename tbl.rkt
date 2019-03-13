@@ -25,7 +25,7 @@
        (format "CREATE TABLE ~a (rowid INTEGER PRIMARY KEY)"
                (clean-sql-table-name name)))
      (define T
-       (table (clean-sql-table-name name) 'sqlite3 empty empty conn))
+       (tbl (clean-sql-table-name name) 'sqlite3 empty empty conn))
      ;; (printf "~s~n" S)
      (query-exec conn S)
      
@@ -42,14 +42,14 @@
   (define S (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
                     (tbl-name T)
                     column (tbl-type->sqlite-type type)))
-  (set-table-columns! T (snoc column (tbl-columns T)))
-  (set-table-types!  T (snoc type (tbl-types T)))
+  (set-tbl-columns! T (snoc column (tbl-columns T)))
+  (set-tbl-types!  T (snoc type (tbl-types T)))
   ;; (printf "~s~n" S)
   (query-exec (tbl-db T) S))
 
 (define add-row!
   (match-lambda*
-    [(list (? table? T)
+    [(list (? tbl? T)
            (? list? values))
      (define S (format "INSERT INTO ~a ~a VALUES ~a"
                        (tbl-name T)
@@ -58,11 +58,11 @@
      ;; (printf "~s~n" S)
      (query-exec (tbl-db T) S)]
     
-    [(list (? table? T)
+    [(list (? tbl? T)
            (? vector? values))
      (add-row! T (vector->list values))]
     
-    [(list (? table? T)
+    [(list (? tbl? T)
            values ...)
      (add-row! T values)]
     ))
@@ -85,7 +85,7 @@
 
   ;; Setting the name of an empty table.
   (define T1 (make-table))
-  (set-table-name! T1 "Transterpreter")
+  (set-tbl-name! T1 "Transterpreter")
 
   ;; Creating a table with a name.
   (define T2 (make-table "concurrency.cc"))
@@ -100,14 +100,16 @@
   (add-row! T4 '(1))
 
   ;; A more table
-  (define T5 (make-table "grocery" '(product qty cost) '(text integer real)))
+  (define T5 (make-table "grocery"
+                         '(product qty cost)
+                         '(text integer real)))
   (add-row! T5 '(apple 10 1.35))
   (add-row! T5 '(kiwi  20 0.75))
   ;; Check that the .args version works.
   (add-row! T5 'nuts 100 0.02)
 
   (chk
-   #:t (table? (make-table))
+   #:t (tbl? (make-table))
    (tbl-name T1) "Transterpreter"
    (tbl-name T2) "concurrencycc"
    (length (tbl-columns T3)) 3
