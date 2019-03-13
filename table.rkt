@@ -17,6 +17,7 @@
      (define S (format "CREATE TABLE ~a (_index INTEGER PRIMARY KEY AUTOINCREMENT)"
                        (clean-sql-table-name name)))
      (define T (table (clean-sql-table-name name) 'sqlite3 empty empty conn))
+     (printf "~s~n" S)
      (query-exec conn S)
      
      (for ([f columns] [t types])
@@ -25,6 +26,9 @@
      ]
     ))
 
+;; FIXME
+;; Make sure fields conform to SQL naming conventions
+;; Make sure types are valid.
 (define (add-column! T column type)
   (define S (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
                     (table-name T)
@@ -33,12 +37,6 @@
   (set-table-types!  T (snoc type (table-types T)))
   (printf "~s~n" S)
   (query-exec (table-db T) S))
-
-(define (quote-sql o)
-  (cond
-    [(number? o) o]
-    [(symbol? o) (format "'~a'" (symbol->string o))]
-    [(string? o) (format "'~a'" (regexp-replace #px"'" o "''"))]))
 
 (define add-row!
   (match-lambda*
