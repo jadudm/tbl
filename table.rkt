@@ -9,15 +9,23 @@
 (provide (all-defined-out))
 
 (define make-table
-  (case-lambda
-    [() (make-table "coffee" empty empty)]
-    [(name) (make-table name empty empty)]
-    [(name columns types)
+  (match-lambda*
+    ['() (make-table "coffee" empty empty)]
+    [(list (? string-or-symbol? name))
+     (make-table (~a name) empty empty)]
+    [(list (? string-or-symbol? name)
+           (? (λ (ls) (andmap string-or-symbol? ls)) columns)
+           (? (λ (ls) (andmap string-or-symbol? ls)) types))
      (define conn (sqlite3-connect #:database 'memory))
      ;; Create the backing table
-     (define S (format "CREATE TABLE ~a (_index INTEGER PRIMARY KEY AUTOINCREMENT)"
-                       (clean-sql-table-name name)))
-     (define T (table (clean-sql-table-name name) 'sqlite3 empty empty conn))
+     (define S
+       ;; https://www.sqlite.org/lang_createtable.html#rowid
+       ;; ROWID is an INTEGER PRIMARY KEY automatically.
+       ;; So... perhaps we do not need an index column?
+       (format "CREATE TABLE ~a (rowid INTEGER PRIMARY KEY)"
+               (clean-sql-table-name name)))
+     (define T
+       (table (clean-sql-table-name name) 'sqlite3 empty empty conn))
      ;; (printf "~s~n" S)
      (query-exec conn S)
      

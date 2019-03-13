@@ -47,8 +47,7 @@
   
   (define flavorsT (read-gsheet "https://pult.us/u/flavors"))
   (define citiesT (read-gsheet "http://bit.ly/cities-csv"))
-  (define gunsT (read-csv gun-deaths-csv))
-  
+ 
   (chk
    ;; What are the ages in the flavors GSheet?
    (pull flavorsT 'age)  '(42 9 5)
@@ -71,7 +70,14 @@
    ;; Does pick return a table with fewer columns?
    (column-count flavorsT) 3
    (column-count (pick flavorsT "age" "name")) 2
+   
+   ) ;; end of chk
 
+  ;; Using a bigger table
+  #;(begin
+    (define gunsT (read-csv gun-deaths-csv))
+    (chk
+     
    ;; What about a bigger table?
    (length (pull gunsT 'age)) 100798
    (row-count gunsT) 100798
@@ -79,7 +85,8 @@
    ;; "col0","year","month","intent","police","sex","age","race","hispanic","place","education"
    ;; Check if we can pick three from the table
    (column-count (pick gunsT "year" "sex" "race")) 3
-   
-   ) ;; end of chk
-
+   ))
 )
+
+;; Deleting the nth row
+;; https://stackoverflow.com/questions/23791239/sqlite-delete-nth-row-android
