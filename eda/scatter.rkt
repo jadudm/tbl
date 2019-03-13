@@ -37,7 +37,7 @@
   (range (length (pull T series-name))))
 
 (define (guard-tidy-x/y T params)
-  (define series-names (map ->string (table-columns T)))
+  (define series-names (map ->string (tbl-columns T)))
   ;; (printf "series-names: ~s~n" series-names)
   
   (unless (hash-ref params 'x-series false)

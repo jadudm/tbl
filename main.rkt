@@ -12,6 +12,6 @@ Thereafter your "make" is:
   raco setup --pkgs project
 |#
 
-(require "table.rkt")
+(require "tbl.rkt")
 (provide (all-from-out
-          "table.rkt"))
+          "tbl.rkt"))

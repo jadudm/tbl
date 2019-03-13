@@ -40,23 +40,23 @@
 ;; Make sure types are valid.
 (define (add-column! T column type)
   (define S (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
-                    (table-name T)
-                    column (table-type->sqlite-type type)))
-  (set-table-columns! T (snoc column (table-columns T)))
-  (set-table-types!  T (snoc type (table-types T)))
+                    (tbl-name T)
+                    column (tbl-type->sqlite-type type)))
+  (set-table-columns! T (snoc column (tbl-columns T)))
+  (set-table-types!  T (snoc type (tbl-types T)))
   ;; (printf "~s~n" S)
-  (query-exec (table-db T) S))
+  (query-exec (tbl-db T) S))
 
 (define add-row!
   (match-lambda*
     [(list (? table? T)
            (? list? values))
      (define S (format "INSERT INTO ~a ~a VALUES ~a"
-                       (table-name T)
-                       (add-between (table-columns T) ",")
+                       (tbl-name T)
+                       (add-between (tbl-columns T) ",")
                        (add-between (map quote-sql values) ",")))
      ;; (printf "~s~n" S)
-     (query-exec (table-db T) S)]
+     (query-exec (tbl-db T) S)]
     
     [(list (? table? T)
            (? vector? values))
@@ -68,10 +68,10 @@
     ))
 
 (define (column-count T)
-  (length (table-columns T)))
+  (length (tbl-columns T)))
 
 (define (row-count T)
-  (query-value (table-db T) (format "SELECT count(*) FROM ~a" (table-name T))))
+  (query-value (tbl-db T) (format "SELECT count(*) FROM ~a" (tbl-name T))))
 
      
 
@@ -108,13 +108,13 @@
 
   (chk
    #:t (table? (make-table))
-   (table-name T1) "Transterpreter"
-   (table-name T2) "concurrencycc"
-   (length (table-columns T3)) 3
-   (length (table-types T3))  3
+   (tbl-name T1) "Transterpreter"
+   (tbl-name T2) "concurrencycc"
+   (length (tbl-columns T3)) 3
+   (length (tbl-types T3))  3
 
    ;; Check if the insert into T5 works.
-   (query-rows (table-db T5) (select (.*) #:from (TableRef:INJECT ,(table-name T5))))
+   (query-rows (tbl-db T5) (select (.*) #:from (TableRef:INJECT ,(tbl-name T5))))
    '(#(1 "apple" 10 1.35) #(2 "kiwi" 20 0.75) #(3 "nuts" 100 0.02))
    
    ))

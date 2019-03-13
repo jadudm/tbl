@@ -6,7 +6,7 @@
 (define (clean-sql-table-name str)
   (regexp-replace* #px"[\\W]" str ""))
 
-(define (table-type->sqlite-type t)
+(define (tbl-type->sqlite-type t)
   (case (->symbol t)
     [(int integer number numeric) 'integer]
     [(real) 'real]

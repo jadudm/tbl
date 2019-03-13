@@ -2,6 +2,6 @@
 
 (provide (all-defined-out))
 
-(struct table (name type columns types db)
+(struct tbl (name type columns types db)
   #:transparent
   #:mutable)

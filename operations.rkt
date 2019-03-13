@@ -14,23 +14,23 @@
 ;; PULL
 (define (pull T column)
   (define Q (select (ScalarExpr:INJECT ,(->string column))
-                    #:from (TableRef:INJECT ,(table-name T))))
-  (query-list (table-db T) Q))
+                    #:from (TableRef:INJECT ,(tbl-name T))))
+  (query-list (tbl-db T) Q))
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
 ;; SELECT
 (define (pick T . columns)
   (define Q (format "SELECT ~a FROM ~a"
                     (apply string-append (add-between (map ->string columns) ","))
-                    (table-name T)))
+                    (tbl-name T)))
   ;; (printf "~s~n" Q)
-  (define rows (query-rows (table-db T) Q))
+  (define rows (query-rows (tbl-db T) Q))
   ;; I want a table to come back. So, create a new table, and insert all the things.
-  (define newT (make-table (format "~a_~a" (table-name T)
+  (define newT (make-table (format "~a_~a" (tbl-name T)
                                    (apply string-append (add-between columns "_")))
                            columns
                            (map (λ (col)
-                                  (list-ref (table-types T)
+                                  (list-ref (tbl-types T)
                                             (index-of columns col)))
                                 columns)))
   (for ([row rows])
@@ -73,12 +73,12 @@
 ;; pull-from-table, filter-table, ... ?
 (define (filter-rows:Q T quotedQ)
   (define Q (select (.*)
-                    #:from (TableRef:INJECT ,(table-name T))
+                    #:from (TableRef:INJECT ,(tbl-name T))
                     #:where (ScalarExpr:INJECT ,(->infix quotedQ))))
-  (define rows (query-rows (table-db T) Q))
-  (define newT (make-table (format "~a_filtered" (table-name T))
-                           (table-columns T)
-                           (table-types T)))
+  (define rows (query-rows (tbl-db T) Q))
+  (define newT (make-table (format "~a_filtered" (tbl-name T))
+                           (tbl-columns T)
+                           (tbl-types T)))
   (for ([row rows])
     ;; Drop the ROWID when inserting.
     (add-row! newT (rest (vector->list row))))
@@ -93,8 +93,8 @@
 ;; For now, I'm going to say NO, because the user didn't
 ;; choose to put that value in their data.
 (define (get-rows T)
-  (define Q (select (.*) #:from (TableRef:INJECT ,(table-name T))))
-  (define rows (query-rows (table-db T) Q))
+  (define Q (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
+  (define rows (query-rows (tbl-db T) Q))
   (map rest (map vector->list rows)))
 
 

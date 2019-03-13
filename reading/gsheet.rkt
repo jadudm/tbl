@@ -32,5 +32,5 @@
   ;; Most of this gets tested in the operations.
   ;; That is, the tables are exercized by the operations on them.
   (define T (read-gsheet "https://tinyurl.com/yx8nswkz"))
-  (query-rows (table-db T) (select (.*) #:from (TableRef:INJECT ,(table-name T))))
+  (query-rows (tbl-db T) (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
   )
