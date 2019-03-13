@@ -74,7 +74,7 @@
         [(mostly? string? vals) 'text]
         [else 'blob])))
   
-  (define T (create-table name (first rows) types))
+  (define T (make-table name (first rows) types))
   (for ([row (rest rows)])
     (add-row! T row))
   T
