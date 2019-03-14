@@ -1,11 +1,11 @@
 #lang racket
 
-(require table
-         table/types
-         table/util/util
-         table/util/sqlite
+(require tbl
+         tbl/types
+         tbl/util/util
+         tbl/util/sqlite
          db sql
-         table/reading/gsheet
+         tbl/reading/gsheet
          )
 
 (provide (all-defined-out))
@@ -26,7 +26,7 @@
   ;; (printf "~s~n" Q)
   (define rows (query-rows (tbl-db T) Q))
   ;; I want a table to come back. So, create a new table, and insert all the things.
-  (define newT (make-table (format "~a_~a" (tbl-name T)
+  (define newT (make-tbl (format "~a_~a" (tbl-name T)
                                    (apply string-append (add-between columns "_")))
                            columns
                            (map (λ (col)
@@ -74,7 +74,7 @@
                     #:from (TableRef:INJECT ,(tbl-name T))
                     #:where (ScalarExpr:INJECT ,(->infix quotedQ))))
   (define rows (query-rows (tbl-db T) Q))
-  (define newT (make-table (format "~a_filtered" (tbl-name T))
+  (define newT (make-tbl (format "~a_filtered" (tbl-name T))
                            (tbl-columns T)
                            (tbl-types T)))
   (for ([row rows])
@@ -98,10 +98,10 @@
 
 (module+ test
   (require rackunit/chk
-           table/reading/gsheet
-           table/reading/csv
-           table/test/files
-           table/test/data
+           tbl/reading/gsheet
+           tbl/reading/csv
+           tbl/test/files
+           tbl/test/data
            math)
   
   (define flavorsT (read-gsheet "https://pult.us/u/flavors"))

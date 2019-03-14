@@ -1,27 +1,27 @@
 #lang racket
 (require db sql
-         table/types
-         table/util/sqlite
-         table/util/util
+         tbl/types
+         tbl/util/sqlite
+         tbl/util/util
          csv-reading
          net/url)
 
 (provide (all-defined-out))
 
-(define make-table
+(define make-tbl
   (match-lambda*
-    ['() (make-table "coffee" empty empty)]
+    ['() (make-tbl "coffee" empty empty)]
     [(list (? string-or-symbol? name))
-     (make-table (~a name) empty empty)]
+     (make-tbl (~a name) empty empty)]
     [(list (? string-or-symbol? name)
            (? (λ (ls) (andmap string-or-symbol? ls)) columns)
            (? (λ (ls) (andmap string-or-symbol? ls)) types))
      (define conn (sqlite3-connect #:database 'memory))
      ;; Create the backing table
+     ;; https://www.sqlite.org/lang_createtable.html#rowid
+     ;; ROWID is an INTEGER PRIMARY KEY automatically.
+     ;; So... perhaps we do not need an index column?
      (define S
-       ;; https://www.sqlite.org/lang_createtable.html#rowid
-       ;; ROWID is an INTEGER PRIMARY KEY automatically.
-       ;; So... perhaps we do not need an index column?
        (format "CREATE TABLE ~a (rowid INTEGER PRIMARY KEY)"
                (clean-sql-table-name name)))
      (define T
@@ -81,26 +81,26 @@
   (require rackunit/chk)
 
   ;; Creating an empty table.
-  (define empty-table (make-table))
+  (define empty-table (make-tbl))
 
   ;; Setting the name of an empty table.
-  (define T1 (make-table))
+  (define T1 (make-tbl))
   (set-tbl-name! T1 "Transterpreter")
 
   ;; Creating a table with a name.
-  (define T2 (make-table "concurrency.cc"))
+  (define T2 (make-tbl "concurrency.cc"))
 
   ;; Creating a table with columns and types
-  (define T3 (make-table "jadud.com" '(a b c) '(number number text)))
+  (define T3 (make-tbl "jadud.com" '(a b c) '(number number text)))
 
   ;; Adding a column
-  (define T4 (make-table))
+  (define T4 (make-tbl))
   (add-column! T4 'bob 'integer)
   ;; Adding a row
   (add-row! T4 '(1))
 
   ;; A more table
-  (define T5 (make-table "grocery"
+  (define T5 (make-tbl "grocery"
                          '(product qty cost)
                          '(text integer real)))
   (add-row! T5 '(apple 10 1.35))
@@ -109,7 +109,7 @@
   (add-row! T5 'nuts 100 0.02)
 
   (chk
-   #:t (tbl? (make-table))
+   #:t (tbl? (make-tbl))
    (tbl-name T1) "Transterpreter"
    (tbl-name T2) "concurrencycc"
    (length (tbl-columns T3)) 3
@@ -120,4 +120,3 @@
    '(#(1 "apple" 10 1.35) #(2 "kiwi" 20 0.75) #(3 "nuts" 100 0.02))
    
    ))
-  

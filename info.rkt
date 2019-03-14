@@ -1,10 +1,10 @@
 #lang info
 
-(define collection "table")
+(define collection "tbl")
 
-(define scribblings '(("scribblings/table.scrbl"
+(define scribblings '(("scribblings/tbl.scrbl"
                        (multi-page)
-                       ("Data Tables, Simplified"))))
+                       ("Data Tables, But Smaller"))))
 
 (define deps '("base"
                "db"
@@ -15,6 +15,6 @@
                "rackunit-chk"
                "sql"))
 
-(define pkg-desc "Documentation for \"table\"")
+(define pkg-desc "Documentation for \"tbl\"")
 
 (define pkg-authors '(jadudm))

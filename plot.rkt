@@ -1,6 +1,6 @@
 #lang racket
 
-(require table/eda/scatter)
+(require tbl/eda/scatter)
 
 (provide (all-from-out
-          table/eda/scatter))
+          tbl/eda/scatter))

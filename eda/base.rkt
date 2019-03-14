@@ -1,6 +1,7 @@
 #lang racket
 
-(require data-table
+(require tbl
+         tbl/operations
          plot/utils)
 
 (provide (all-defined-out))
@@ -120,7 +121,7 @@
     [color-by
      (hash-set! params
                 'ps
-                (for/list ([lab (select #:from T #:column color-by)])
+                (for/list ([lab (pull T color-by)])
                   (color-labeler lab)))]
     [else
      (hash-set! params 'ps (for/list ([n (length (hash-ref params 'xs))]) (hash-ref params 'default-symbol)))
@@ -139,10 +140,10 @@
     [color-by
      (hash-set! params
                 'plc
-                (for/list ([lab (select #:from T #:column color-by)])
+                (for/list ([lab (pull T color-by)])
                   (color-labeler lab)))
      (hash-set! params 'pfc
-                (for/list ([lab (select #:from T #:column color-by)])
+                (for/list ([lab (pull T color-by)])
                   (color-labeler lab)))]
     [else
      (hash-set! params 'plc

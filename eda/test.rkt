@@ -1,9 +1,9 @@
 #lang racket
 
-(require table/plot
-         table/reading/gsheet
-         table/reading/csv
-         table/test/files)
+(require tbl/plot
+         tbl/reading/gsheet
+         tbl/reading/csv
+         tbl/test/files)
 
 (define T (read-gsheet "http://bit.ly/2ChP8HY"))
 (define gunsT (read-csv gun-deaths-csv))

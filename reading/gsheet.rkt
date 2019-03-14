@@ -1,7 +1,7 @@
 #lang racket
-(require table
-         table/reading/csv
-         table/util/csv
+(require tbl
+         tbl/reading/csv
+         tbl/util/csv
          net/url
          )
 
@@ -25,12 +25,12 @@
     ))    
 
 (module+ test
-  (require table/types
+  (require tbl/types
            rackunit/chk
            db sql)
   ;; FIXME
   ;; Most of this gets tested in the operations.
-  ;; That is, the tables are exercized by the operations on them.
+  ;; That is, the tbls are exercized by the operations on them.
   (define T (read-gsheet "https://tinyurl.com/yx8nswkz"))
   (query-rows (tbl-db T) (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
   )

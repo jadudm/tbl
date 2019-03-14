@@ -2,12 +2,12 @@
 
 (provide (all-defined-out))
 
-(require table
-         table/types
-         table/operations
-         table/util/util
-         table/eda/base
-         table/eda/types
+(require tbl
+         tbl/types
+         tbl/operations
+         tbl/util/util
+         tbl/eda/base
+         tbl/eda/types
          plot
          plot/utils
          racket/draw)

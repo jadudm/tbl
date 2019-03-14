@@ -1,5 +1,5 @@
 #lang racket
-(require table/util/util)
+(require tbl/util/util)
                        
 (provide (all-defined-out))
 
@@ -14,7 +14,7 @@
     [(blob any) 'blob]
     [(date) 'text]
     [else
-     (error 'table-type
+     (error 'tbl-type
             "Table types must be one of [numeric, textual, date, blob]. You provided '~a'."
             t)]
     ))

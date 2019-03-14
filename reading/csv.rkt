@@ -1,8 +1,8 @@
 #lang racket
 
-(require table
+(require tbl
          csv-reading
-         table/util/csv
+         tbl/util/csv
          net/url
          )
 
@@ -39,7 +39,7 @@
            [else 'blob])))
      
      (define headers (cleanup-column-names (first rows)))
-     (define T (make-table name headers types))
+     (define T (make-tbl name headers types))
      (for ([row (rest rows)])
        (add-row! T row))
      T]
