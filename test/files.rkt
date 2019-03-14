@@ -12,5 +12,7 @@
 ;; https://fivethirtyeight.com/features/gun-deaths/
 (define-runtime-path gun-deaths-csv "guns.csv")
 
+(define-runtime-path supreme-court-csv "supreme_court.csv")
+
   
   

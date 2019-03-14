@@ -23,4 +23,4 @@
   (cond
     [(number? o) o]
     [(symbol? o) (format "'~a'" (symbol->string o))]
-    [(string? o) (format "'~a'" (regexp-replace #px"'" o "''"))]))
+    [(string? o) (format "'~a'" (regexp-replace* #px"'" o "''"))]))

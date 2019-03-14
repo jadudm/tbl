@@ -3,6 +3,7 @@
          tbl/types
          tbl/util/sqlite
          tbl/util/util
+         tbl/util/sanity
          csv-reading
          net/url)
 
@@ -39,10 +40,12 @@
 ;; Make sure fields conform to SQL naming conventions
 ;; Make sure types are valid.
 (define (add-column! T column type)
+  (define cleaned (clean-column-name column))
+  
   (define S (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
                     (tbl-name T)
-                    column (tbl-type->sqlite-type type)))
-  (set-tbl-columns! T (snoc column (tbl-columns T)))
+                    cleaned (tbl-type->sqlite-type type)))
+  (set-tbl-columns! T (snoc cleaned (tbl-columns T)))
   (set-tbl-types!  T (snoc type (tbl-types T)))
   ;; (printf "~s~n" S)
   (query-exec (tbl-db T) S))
