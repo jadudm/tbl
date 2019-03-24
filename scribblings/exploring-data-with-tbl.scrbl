@@ -15,7 +15,8 @@
       (parameterize ([sandbox-output 'string]
                      [sandbox-error-output 'string]
                      [sandbox-memory-limit 4096])
-        (make-evaluator 'racket)
+        (make-evaluator 'racket
+                        #:requires '(plot/pict plot/utils))
         ))))
     
 @title[#:tag "exploring-data-with-tbl"]{Exploring Data with @racket[tbl]}
@@ -140,14 +141,18 @@ Is there any pattern in terms of the day of the week these events happen on?
 
 This data set will not tell us why, but it seems like Thursdays are the least likely day of the week for a school shooting to occur. We can plot this, if we want, for a visual representation of the same information.
 
+
+@examples[#:eval my-evaluator
+          #:hidden
+          (require (only-in tbl/plot hist))]
+
 @examples[#:eval my-evaluator
           #:label false
-          (require tbl/plot)
           (plot (hist dT "day_of_week" "killed"
                       #:order '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday")))
           ]
 
-
+@(linebreak)
 
 Finally, if we want to understand what kinds of weapons were used, we would have some additional work to do. I'll perform this analysis with the full data set, and then show how I could abstract it to work with any subset of the data.
 
@@ -209,44 +214,22 @@ Numerical data is often best communicated in pictures. The @racket[tbl] library 
 
 @examples[#:eval my-evaluator
           #:label false
-          #:hidden
-          (require plot/no-gui)
-          (plot-file (hist wdT "weapon_type" "killed")
-                     "hist-1.png"
-                     'png
-                     #:width 600)
-          ]
-
-@examples[#:eval my-evaluator
-          #:label false
-          #:no-result
           (plot (hist wdT "weapon_type" "killed"))
           ]
+@(linebreak)
 
-@centered{@(image "hist-1.png" #:scale 0.8)}
+@;centered{@(image "hist-1.png" #:scale 0.8)}
 
 And, because we are leveraging Racket for our data analysis, we can do a lot more with our plots; at the least, we might apply some labeling.
 
 @examples[#:eval my-evaluator
           #:label false
-          #:hidden
-          (plot-file (hist wdT "weapon_type" "killed")
-                     "hist-2.png"
-                     'png
-                     #:title "Weapons Used in School Schootings"
-                     #:x-label "Weapon Used"
-                     #:y-label "Deaths in schools since 1999"
-                     #:width 600
-                     )]
-
-@examples[#:eval my-evaluator
-          #:label false
-          #:no-result
           (plot (hist wdT "weapon_type" "killed")
                 #:title "Weapons Used in School Schootings"
                 #:x-label "Weapon Used"
                 #:y-label "Deaths in schools since 1999"
                 )
           ]
+@(linebreak)
 
-@centered{@(image "hist-2.png" #:scale 0.8)}
+@;centered{@(image "hist-2.png" #:scale 0.8)}
