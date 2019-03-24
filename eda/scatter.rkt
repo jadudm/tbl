@@ -1,34 +1,15 @@
 #lang racket
 
-(provide (all-defined-out))
+(provide scatter)
 
 (require tbl
-         tbl/types
          tbl/operations
          tbl/util/util
-         tbl/eda/base
          tbl/eda/types
+         tbl/eda/base         
          plot
          plot/utils
          racket/draw)
-
-;; Expects a tidy-plot struct.
-;; This has both params and a thunk.
-(define (show tps)
-  (define params (eda-params tps))
-  (parameterize ([plot-decorations? (hash-ref params 'plot-decorations? true)]
-                 [plot-font-family (hash-ref params 'font-family)])
-  
-   (plot (thaw (eda-thunk tps))
-         #:x-label (hash-ref (eda-params tps) 'x-label)
-         #:y-label (hash-ref (eda-params tps) 'y-label)
-         #:x-min   (hash-ref (eda-params tps) 'x-min)
-         #:x-max   (hash-ref (eda-params tps) 'x-max)
-         #:y-min   (hash-ref (eda-params tps) 'y-min)
-         #:y-max   (hash-ref (eda-params tps) 'y-max)
-         #:width   (hash-ref (eda-params tps) 'width 600)
-         #:height  (hash-ref (eda-params tps) 'height 400)
-         )))
 
 (define (setup-scatterplot-points T series-name)
   (pull T series-name))
@@ -102,6 +83,7 @@
   
   ;; Do the plot.
   (eda params (scatterplot T params)))
+
 (define scatter eda-x/y)
 (define x/y eda-x/y)
 

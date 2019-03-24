@@ -48,6 +48,12 @@
     [(==) '=]
     [else s]))
 
+(define (monop? op)
+  (member op '(not !=)))
+(define (->monop o)
+  (case o
+    [(not !=) 'NOT]))
+
 (define (->infix exp col-names)
   (match exp
     [(? number? n) n]
@@ -58,6 +64,8 @@
          (quote-sql (->string s))
          )
      ]
+    [(list (? monop? op) rand)
+     (format "~a (~a)" (->monop op) (->infix rand col-names))]
     [(list (? binop? op) lhs rhs)
      (format "(~a ~a ~a)" (->infix lhs col-names) (->binop op) (->infix rhs col-names))]
     ))
@@ -94,26 +102,6 @@
 (define-syntax-rule (filter-rows T Q)
   (filter-rows:Q T (quasiquote Q)))
 
-
-(require (for-syntax syntax/parse))
-
-(define-syntax (function stx)
-  (syntax-parse stx
-    [(_f (T args ...) body)
-     #`(lambda (row)
-         ;; Bind the args to the correct row locations?
-         body)]))
-
-;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
-;; COMPUTE
-;; Computes a new row based on other rows.
-(define (compute:Q T new-row fun)
-  
-  
-  
-  'pass
-  )
-
 ;; Gets all the rows as a list of lists.
 ;; FIXME: This includes the ROWID. Should
 ;; the ROWID be included when communicating back to the user?
@@ -131,6 +119,11 @@
   (map vector->list rows))
 
 (define flavorsT (read-gsheet "https://pult.us/u/flavors"))
+
+
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; COMPUTE
+;; Computes a new row based on other rows.
 
 ;; FIXME: Must handle case where column does not exist yet.
 ;; FIXME: Must check that the function parameters are
@@ -150,7 +143,7 @@
            (define (Q rowid v)
              (format "UPDATE ~a SET ~a = ~a WHERE ROWID = ~a"
                      (tbl-name T)
-                     new-row v rowid))
+                     new-row (quote-sql v) rowid))
            (for ([row rows])
              (query-exec
               (tbl-db T)
@@ -175,6 +168,20 @@
                     name type))
   (query-exec (tbl-db T) Q))
   
+
+
+;  ;;;;;;; ;;;;;;   ;;;;; ;;;;;;;  ;;;;; 
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;         ;    ;      
+;     ;    ;;;;;;   ;;;;;    ;     ;;;;; 
+;     ;    ;             ;   ;          ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;;;;;;   ;;;;;    ;     ;;;;; 
+;                                        
+;                                        
+;                                        
 
 (module+ test
   (require rackunit/chk

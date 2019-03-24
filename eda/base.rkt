@@ -1,11 +1,35 @@
 #lang racket
 
 (require tbl
+         tbl/eda/types
          tbl/operations
+         plot
          plot/utils)
 
 (provide (all-defined-out))
 
+
+;; FIXME FIXME FIXME
+;; My renderers should produce... er, renderers.
+;; This should play nice with Racket's plot package.
+
+;; Expects a tidy-plot struct.
+;; This has both params and a thunk.
+(define (show tps)
+  (define params (eda-params tps))
+  (parameterize ([plot-decorations? (hash-ref params 'plot-decorations? true)]
+                 [plot-font-family (hash-ref params 'font-family)])
+  
+   (plot (thaw (eda-thunk tps))
+         #:x-label (hash-ref (eda-params tps) 'x-label)
+         #:y-label (hash-ref (eda-params tps) 'y-label)
+         #:x-min   (hash-ref (eda-params tps) 'x-min)
+         #:x-max   (hash-ref (eda-params tps) 'x-max)
+         #:y-min   (hash-ref (eda-params tps) 'y-min)
+         #:y-max   (hash-ref (eda-params tps) 'y-max)
+         #:width   (hash-ref (eda-params tps) 'width 600)
+         #:height  (hash-ref (eda-params tps) 'height 400)
+         )))
 
 (define possible-symbols
   (list 'fullcircle       'fullsquare

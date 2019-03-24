@@ -15,9 +15,9 @@ Thereafter your "make" is:
 (require "basics.rkt"
          "operations.rkt"
          "reading/csv.rkt"
+         "reading/gsheet.rkt"
 
          "types.rkt"
-         
          "test/files.rkt"
          
          "util/lists.rkt"
@@ -29,9 +29,13 @@ Thereafter your "make" is:
 (provide (all-from-out
           "basics.rkt"
           "operations.rkt"
+          
           "reading/csv.rkt"
+          "reading/gsheet.rkt"
+          
           "types.rkt"
           "test/files.rkt"
+          
           
           "util/lists.rkt"
 
