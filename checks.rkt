@@ -2,7 +2,8 @@
 
 (require tbl/types
          tbl/util/util
-         tbl/operations)
+         tbl/operations
+         )
 
 (provide (all-defined-out))
 
@@ -25,9 +26,11 @@
 (define (sql-type->racket-type t)
   (case (->symbol t)
     [(text string txt) 'string]
-    [(number) 'number]
+    [(number numeric integer int real double float) 'number]
     [(blob bytes) 'bytes]
-    [(any) 'any]))
+    [(any) 'any]
+    [else 'unknown]
+    ))
 
 (define (λ:not f)
   (λ (v) (not (f v))))
@@ -58,7 +61,16 @@
   ;;(printf "~a~n" found)
   errors?)
 
-(module+ test
+(define (count-true ls)
+  (apply + (map (λ (o) (if (and (boolean? o) (equal? o true)) 1 0)) ls)))
+
+(define (count-false ls)
+  (apply + (map (λ (o) (if (and (boolean? o) (equal? o false)) 1 0)) ls)))
+
+(define (count-if T col pred?)
+  (count-true (map pred? (pull T col))))
+
+#;(module+ test
   (require rackunit/chk
            tbl
            tbl/types)

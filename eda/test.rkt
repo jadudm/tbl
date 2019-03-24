@@ -29,6 +29,7 @@
 (require tbl)
 (define csv "http://bit.ly/wp-gun-deaths-csv")
 (define gT (read-csv csv))
+(check-table gT)
 
 (define (weapon->type weapon)
   (cond

@@ -1,5 +1,5 @@
 #lang scribble/manual
-@(require 
+@(require tbl
           scribble/eval
           scribble/struct
           racket/sandbox
@@ -51,7 +51,18 @@ jadudm$ wc -l school-shootings-data.csv
      222 school-shootings-data.csv
 }|
 
-This tells us there are 222 lines in the file: one header row, and 221 rows of data. The @racket[row-count] function only counts rows of data, so our first ``sanity check'' in our work with this data suggests we're good to continue.
+This tells us there are 222 lines in the file: one header row, and 221 rows of data. The @racket[row-count] function only counts rows of data, so our first ``sanity check'' is only our first step in working with this new set of data. We might also check the table, to find out whether the data is relatively clean, or if we have some work to do.
+
+@interaction[#:eval my-evaluator
+             (check-table T)]
+
+When you import a table, the importer guesses what kind of information is in each column. The @racket[check-table] function then checks to see how many values do (or do not) match that guess. Anywhere that a value is missing (or @racket[not-available?]) it will count as not matching. So, this might be a first check to see how many values are missing from your dataset.
+
+@interaction[#:eval my-evaluator
+             (count-if T "weapon" not-available?)
+             ]
+
+@racket[count-if] will count how many elements of a column match the question that is asked; in this case, I'm asking how many values in the column labeled "weapon" are @racket[not-available?]. This is how we check for missing values in a @racket[tbl]. It matches the value of 34 that we got from the warning above, which suggests that we may have some cleaning to do if we want to use this column in any calculations.
 
 @section[#:tag "exploring-the-data"]{Exploring the Data}
 
@@ -111,7 +122,17 @@ Is there any pattern in terms of the day of the week these events happen on?
           (aggregate dT sum  "day_of_week" "killed")
           ]
 
-This data set will not tell us why, but it seems like Thursdays are the least likely day of the week for a school shooting to occur. Finally, if we want to understand what kinds of weapons were used, we would have some additional work to do. I'll perform this analysis with the full data set, and then show how I could abstract it to work with any subset of the data.
+This data set will not tell us why, but it seems like Thursdays are the least likely day of the week for a school shooting to occur. We can plot this, if we want, for a visual representation of the same information.
+
+@interaction[#:eval my-evaluator
+             (require tbl/plot)
+             (plot (hist dT "day_of_week" "killed"
+                         #:order '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday")))
+             ]
+
+
+
+Finally, if we want to understand what kinds of weapons were used, we would have some additional work to do. I'll perform this analysis with the full data set, and then show how I could abstract it to work with any subset of the data.
 
 To do this, I'm going to write a function that matches some text patterns, and simplifies the data in this column.
 
@@ -165,8 +186,7 @@ At a glance, this tells us that weapons I have categorized as handguns account f
 Numerical data is often best communicated in pictures. The @racket[tbl] library includes some simplified plotting tools for quickly exploring data visually. 
 
 @interaction[#:eval my-evaluator
-          (require tbl/plot)
-          (plot (hist wdT "weapon_type" "killed"))
+             (plot (hist wdT "weapon_type" "killed"))
           ]
 
 And, because we are leveraging Racket for our data analysis, we can do a lot more with our plots; at the least, we might apply some labeling.

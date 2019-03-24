@@ -1,7 +1,6 @@
 #lang racket
 
-(require tbl/util/util
-         )
+(require tbl/util/util)
 
 (provide (all-defined-out))
 
