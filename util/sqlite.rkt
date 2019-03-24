@@ -1,5 +1,6 @@
 #lang racket
-(require tbl/util/util)
+(require tbl/util/util
+         tbl/types)
                        
 (provide (all-defined-out))
 
@@ -22,5 +23,8 @@
 (define (quote-sql o)
   (cond
     [(number? o) o]
+    ;; Do not quote null.
+    [(equal? o "NULL") "NULL"]
+    [(none? o) "NULL"]
     [(symbol? o) (format "'~a'" (symbol->string o))]
     [(string? o) (format "'~a'" (regexp-replace* #px"'" o "''"))]))

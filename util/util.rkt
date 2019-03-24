@@ -13,3 +13,9 @@
 
 (define (->string o)
   (~a o))
+
+(define (true? o)
+  (and (boolean? o) o))
+
+(define (false? o)
+  (and (boolean? o) (not o)))

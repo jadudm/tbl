@@ -1,6 +1,6 @@
 #lang racket
 
-(require tbl
+(require tbl/basics
          csv-reading
          tbl/util/csv
          net/url

@@ -4,9 +4,9 @@
          tbl/util/sqlite
          tbl/util/util
          tbl/util/sanity
-         csv-reading
-         net/url)
+         )
 
+;; FIXME: Get contract-out in place.
 (provide (all-defined-out))
 
 (define make-tbl
@@ -54,17 +54,26 @@
   (match-lambda*
     [(list (? tbl? T)
            (? list? values))
+     ;; Need to find values that are empty, and convert them to SQL-NULL values.
+     (set! values (map (λ (v) (if (or (equal? v "")
+                                      (none? v))
+                                  "NULL"
+                                  v)) values))
+     
      (define S (format "INSERT INTO ~a ~a VALUES ~a"
                        (tbl-name T)
                        (add-between (tbl-columns T) ",")
                        (add-between (map quote-sql values) ",")))
-     ;; (printf "~s~n" S)
+     ;;(printf "~s~n" S)
+     ;; Insert the value into the DB.
      (query-exec (tbl-db T) S)]
-    
+
+    ;; If I'm given a vector
     [(list (? tbl? T)
            (? vector? values))
      (add-row! T (vector->list values))]
-    
+
+    ;; Or, if we have values passed in as parameters.
     [(list (? tbl? T)
            values ...)
      (add-row! T values)]
@@ -76,7 +85,7 @@
 (define (row-count T)
   (query-value (tbl-db T) (format "SELECT count(*) FROM ~a" (tbl-name T))))
 
-     
+(define column-names tbl-columns) 
 
 ;; TESTS
 
@@ -104,8 +113,8 @@
 
   ;; A more table
   (define T5 (make-tbl "grocery"
-                         '(product qty cost)
-                         '(text integer real)))
+                       '(product qty cost)
+                       '(text integer real)))
   (add-row! T5 '(apple 10 1.35))
   (add-row! T5 '(kiwi  20 0.75))
   ;; Check that the .args version works.
@@ -121,5 +130,6 @@
    ;; Check if the insert into T5 works.
    (query-rows (tbl-db T5) (select (.*) #:from (TableRef:INJECT ,(tbl-name T5))))
    '(#(1 "apple" 10 1.35) #(2 "kiwi" 20 0.75) #(3 "nuts" 100 0.02))
-   
+
+   ;;(printf "~s~n" (column-names T5))
    ))

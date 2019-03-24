@@ -1,6 +1,7 @@
 #lang racket
 
-(require tbl/util/util)
+(require tbl/util/util
+         )
 
 (provide (all-defined-out))
 
@@ -27,7 +28,7 @@
   ;; Eliminate spaces
   (set! cleaned (regexp-replace* #px"[[:space:]]+" cleaned "_"))
   
-  (when (not (equal? s cleaned))
+  (when (not (equal? (->string s) cleaned))
     (fprintf (current-error-port)
              (format "The column '~a' must become '~a'.~n" s cleaned)))
   cleaned)

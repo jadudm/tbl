@@ -13,8 +13,9 @@
 
 @defmodule[tbl]
 
-I wrote the tbl library to support first-year students in exploring data in Racket. May of the design decisions, therefore, were made with a mind towards the teaching and learning of programming (in the spirit of @italic{How to Design Programs}).
+I wrote the tbl library so that students new to programming would have a principled introduction to the analysis of data. May of the design decisions, therefore, were made with a mind towards the teaching and learning of programming (in the spirit of @italic{How to Design Programs}).
 
 tbl was written with consideration for how R scripts typically interact with tabular data (in particular, the tidyverse and dplyr libraries), exploration of Pyret's data tables, as well as texts and literature on exploratory data analysis.
 
-@include-section["using-tbl.scrbl"]
+@include-section["exploring-data-with-tbl.scrbl"]
+@;{@include-section["using-tbl.scrbl"]}

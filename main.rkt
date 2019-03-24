@@ -12,6 +12,30 @@ Thereafter your "make" is:
   raco setup --pkgs project
 |#
 
-(require "tbl.rkt")
+(require "basics.rkt"
+         "operations.rkt"
+         "reading/csv.rkt"
+
+         "types.rkt"
+         
+         "test/files.rkt"
+         
+         "util/lists.rkt"
+
+         "analysis/data-science-wrapper.rkt"
+         
+         math/statistics
+         )
 (provide (all-from-out
-          "tbl.rkt"))
+          "basics.rkt"
+          "operations.rkt"
+          "reading/csv.rkt"
+          "types.rkt"
+          "test/files.rkt"
+          
+          "util/lists.rkt"
+
+          "analysis/data-science-wrapper.rkt"
+
+          math/statistics
+          ))

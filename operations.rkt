@@ -1,10 +1,10 @@
 #lang racket
 
-(require tbl
+(require db sql
+         tbl/basics
          tbl/types
          tbl/util/util
          tbl/util/sqlite
-         db sql
          tbl/reading/gsheet
          )
 
@@ -18,7 +18,8 @@
   (query-list (tbl-db T) Q))
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
-;; SELECT
+;; PICK
+;; Returns a new table with the named columns.
 (define (pick T . columns)
   (define Q (format "SELECT ~a FROM ~a"
                     (apply string-append (add-between (map ->string columns) ","))
@@ -27,12 +28,12 @@
   (define rows (query-rows (tbl-db T) Q))
   ;; I want a table to come back. So, create a new table, and insert all the things.
   (define newT (make-tbl (format "~a_~a" (tbl-name T)
-                                   (apply string-append (add-between columns "_")))
-                           columns
-                           (map (λ (col)
-                                  (list-ref (tbl-types T)
-                                            (index-of columns col)))
-                                columns)))
+                                 (apply string-append (add-between columns "_")))
+                         columns
+                         (map (λ (col)
+                                (list-ref (tbl-types T)
+                                          (index-of columns col)))
+                              columns)))
   (for ([row rows])
     (add-row! newT row))
   newT                           
@@ -47,15 +48,18 @@
     [(==) '=]
     [else s]))
 
-(define (->infix exp #:v [v false])
+(define (->infix exp col-names)
   (match exp
     [(? number? n) n]
-    [(? string-or-symbol? s) (if v
-                                 (quote-sql (->string s))
-                                 (->string s))
-                                 ]
+    ;; For columns, quote them differently.
+    [(? string-or-symbol? s)
+     (if (member (->string s) col-names)
+         (->string s)
+         (quote-sql (->string s))
+         )
+     ]
     [(list (? binop? op) lhs rhs)
-     (format "(~a ~a ~a)" (->infix lhs) (->binop op) (->infix rhs #:v true))]
+     (format "(~a ~a ~a)" (->infix lhs col-names) (->binop op) (->infix rhs col-names))]
     ))
 
 ;; FIXME
@@ -70,13 +74,18 @@
 ;; should I use "-table" on table operations?
 ;; pull-from-table, filter-table, ... ?
 (define (filter-rows:Q T quotedQ)
+  (define names (column-names T))
+  ;; (printf "~s~n" names)
+  (define infixQ (->infix quotedQ (column-names T)))
+  ;; (printf "~s~n" infixQ)
   (define Q (select (.*)
                     #:from (TableRef:INJECT ,(tbl-name T))
-                    #:where (ScalarExpr:INJECT ,(->infix quotedQ))))
+                    #:where (ScalarExpr:INJECT ,infixQ)))
+  ;; (printf "Q: ~s~n" Q)
   (define rows (query-rows (tbl-db T) Q))
   (define newT (make-tbl (format "~a_filtered" (tbl-name T))
-                           (tbl-columns T)
-                           (tbl-types T)))
+                         (tbl-columns T)
+                         (tbl-types T)))
   (for ([row rows])
     ;; Drop the ROWID when inserting.
     (add-row! newT (rest (vector->list row))))
@@ -84,6 +93,26 @@
 
 (define-syntax-rule (filter-rows T Q)
   (filter-rows:Q T (quasiquote Q)))
+
+
+(require (for-syntax syntax/parse))
+
+(define-syntax (function stx)
+  (syntax-parse stx
+    [(_f (T args ...) body)
+     #`(lambda (row)
+         ;; Bind the args to the correct row locations?
+         body)]))
+
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; COMPUTE
+;; Computes a new row based on other rows.
+(define (compute:Q T new-row fun)
+  
+  
+  
+  'pass
+  )
 
 ;; Gets all the rows as a list of lists.
 ;; FIXME: This includes the ROWID. Should
@@ -95,6 +124,57 @@
   (define rows (query-rows (tbl-db T) Q))
   (map rest (map vector->list rows)))
 
+;; With ID
+(define (get-rows-with-id T)
+  (define Q (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
+  (define rows (query-rows (tbl-db T) Q))
+  (map vector->list rows))
+
+(define flavorsT (read-gsheet "https://pult.us/u/flavors"))
+
+;; FIXME: Must handle case where column does not exist yet.
+;; FIXME: Must check that the function parameters are
+;; valid names of columns in the table.
+(define-syntax (compute stx)
+  (syntax-case stx ()
+    [(_c T new-row
+         (function (args ...) body bodies ...))
+     (with-syntax ([(ids ...) (generate-temporaries #'(args ...))])
+       #`(let #,(for/list ([arg (syntax->list #'(args ...))])
+                  (with-syntax ([arg arg])
+                    #`[arg (λ (row)
+                             (list-ref row
+                                       (index-of (column-names T)
+                                                 (format "~a" 'arg))))]))
+           (define rows (get-rows-with-id T))
+           (define (Q rowid v)
+             (format "UPDATE ~a SET ~a = ~a WHERE ROWID = ~a"
+                     (tbl-name T)
+                     new-row v rowid))
+           (for ([row rows])
+             (query-exec
+              (tbl-db T)
+              (Q (first row)
+                 (apply (λ (args ...) body bodies ...)
+                        (list
+                         #,@(for/list ([arg (syntax->list #'(args ...))])
+                              (with-syntax ([arg arg])
+                                ;; Drop the ROWID when applying the lookup
+                                #`(arg (rest row)))))
+                        ))))
+              
+           ))]))
+
+;; Must handle situation where column exists.
+(define (add-column T name type)
+  ;; Add it to the list of column names and types
+  (set-tbl-columns! T (append (tbl-columns T) (list name)))
+  (set-tbl-types!   T (append (tbl-types T) (list type)))
+  (define Q (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
+                    (tbl-name T)
+                    name type))
+  (query-exec (tbl-db T) Q))
+  
 
 (module+ test
   (require rackunit/chk
@@ -151,20 +231,49 @@
    
    ) ;; end of chk
 
+  ;; Try extending the table, and computing new values.
+  (add-column flavorsT "double_age" Integer)
+  (compute flavorsT
+           "double_age"
+           (function (age) (* age 2)))
+
+  (chk
+   ;; FIXME When I handle params that are not named correctly,
+   ;; this test may need to be updated.
+   #:exn (compute flavorsT
+                "double_age"
+                (function (agex) (* agex 2)))
+   exn:fail?
+   
+   (column-count flavorsT) 4
+   ;; These do the same thing two different ways.
+   (map fourth (get-rows flavorsT)) '(84 18 10)
+   (pull flavorsT "double_age") '(84 18 10)
+   )
+    
+  (define sdT (read-csv school-shootings))
+  
+  (chk
+   (row-count sdT) 221
+   (row-count (filter-rows sdT (> killed 0))) 59
+   )
+  
   ;; Using a bigger table
   #;(begin
-    (define gunsT (read-csv gun-deaths-csv))
-    (chk
+      (define gunsT (read-csv gun-deaths-csv))
+      (chk
      
-   ;; What about a bigger tbl?
-   (length (pull gunsT 'age)) 100798
-   (row-count gunsT) 100798
-   ;; The columns in this table are
-   ;; "col0","year","month","intent","police","sex","age","race","hispanic","place","education"
-   ;; Check if we can pick three from the table
-   (column-count (pick gunsT "year" "sex" "race")) 3
-   ))
-)
+       ;; What about a bigger tbl?
+       (length (pull gunsT 'age)) 100798
+       (row-count gunsT) 100798
+       ;; The columns in this table are
+       ;; "col0","year","month","intent","police","sex","age","race","hispanic","place","education"
+       ;; Check if we can pick three from the table
+       (column-count (pick gunsT "year" "sex" "race")) 3
+       ))
+
+    
+  )
 
 ;; Deleting the nth row
 ;; https://stackoverflow.com/questions/23791239/sqlite-delete-nth-row-android

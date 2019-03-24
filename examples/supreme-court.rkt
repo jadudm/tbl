@@ -1,9 +1,6 @@
 #lang racket
 
-(require tbl
-         tbl/reading/csv
-         tbl/test/files
-         tbl/operations)
+(require tbl)
 
 (define mdbT (read-csv supreme-court-csv))
 
