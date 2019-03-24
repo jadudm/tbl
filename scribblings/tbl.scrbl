@@ -1,15 +1,12 @@
-#lang scribble/doc
-@(require scribble/manual
-          scribble/struct
+#lang scribble/manual
+@(require scribble/struct
           scribble/eval
           "config.rkt")
 
-@title{tbl: Data Tables for Peoples}
+@title{tbl: A Simplified Interface for Tabular Data}
 @author[@author+email["Matt Jadud" "matt@jadud.com"]]
 
 @section-index["tbl"]
-
-@centered{@italic{A simplified interface for working with tabular data.}}
 
 @defmodule[tbl]
 
