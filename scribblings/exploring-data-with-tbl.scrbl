@@ -181,7 +181,7 @@ As with earlier explorations, we can now aggregate data on the basis of the kind
           (aggregate wdT sum  "weapon_type" "killed")
           ]
 
-At a glance, this tells us that weapons I have categorized as handguns account for 51 of the killings in this dataset, and semiautomatic weapons account for 47. Rifles---like those that might be used by farmers for culling pests from their fields, or responsible game hunters---account for only 2 deaths in schools since 1999.
+At a glance, this tells us that weapons I have categorized as handguns account for 51 of the killings in this dataset, and semiautomatic weapons account for 47. Rifles---like those that might be used by farmers for culling pests from their fields, or by responsible game hunters---account for only 2 deaths in schools since 1999.
 
 Numerical data is often best communicated in pictures. The @racket[tbl] library includes some simplified plotting tools for quickly exploring data visually. 
 
