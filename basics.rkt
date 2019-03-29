@@ -80,10 +80,10 @@
      (add-row! T values)]
     ))
 
-(define (column-count T)
+(define (count-columns T)
   (length (tbl-columns T)))
 
-(define (row-count T)
+(define (count-rows T)
   (query-value (tbl-db T) (format "SELECT count(*) FROM ~a" (tbl-name T))))
 
 (define column-names tbl-columns) 

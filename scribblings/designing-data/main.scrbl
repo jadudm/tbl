@@ -173,12 +173,8 @@ The @racket[require] form loads libraries of code in Racket. Once the library is
           (require tbl
                    tbl/examples)
           (check-tbl aq-maine-2018-T)
-          (row-count aq-maine-2018-T)
-          (column-count aq-maine-2018-T)]
+          (count-rows aq-maine-2018-T)
+          (count-columns aq-maine-2018-T)]
 
 The first function students should learn is @racket[check-tbl]. This makes sure that there are no missing values in the table, and the data in every column is of the correct type. For example, it makes sure that if a column claims to contain integers, that all of the data in that column actually conforms to the type expectations. If everything checks, the function returns @racket[true]. If anything is amiss, errors are reported, and the function returns @racket[false]. After that, it is good to know how many rows and columns are in the table.
-
-
-
-
 

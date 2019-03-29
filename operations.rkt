@@ -296,8 +296,8 @@
    (length (filter (λ (s) (equal? s "ME")) (pull citiesT "State"))) 0
 
    ;; Does pick return a table with fewer columns?
-   (column-count flavorsT) 3
-   (column-count (pick flavorsT "age" "name")) 2
+   (count-columns flavorsT) 3
+   (count-columns (pick flavorsT "age" "name")) 2
 
    ;; All the rows where a condition holds true.
    ;; Note that ROWID is not included when we ask for all of the rows.
@@ -307,7 +307,7 @@
    '(("Matt" 42 "Chocolate") ("Matthew" 9 "Mint"))
 
    ;; Another check; essentially same as the previous
-   (row-count
+   (count-rows
     (filter-rows flavorsT (and (> age 3)
                                (or (= flavor "Mint")
                                    (= flavor "Chocolate")))))
@@ -315,8 +315,8 @@
    
    ;; Check that we end up with a new table that only has
    ;; six rows in it. It should still have 10 columns.
-   (row-count (filter-rows citiesT (= State "OH"))) 6
-   (column-count (filter-rows citiesT (= State "OH"))) 10
+   (count-rows (filter-rows citiesT (= State "OH"))) 6
+   (count-columns (filter-rows citiesT (= State "OH"))) 10
    
    ) ;; end of chk
 
@@ -334,7 +334,7 @@
                 (function (agex) (* agex 2)))
    exn:fail?
    
-   (column-count flavorsT) 4
+   (count-columns flavorsT) 4
    ;; These do the same thing two different ways.
    (map fourth (get-rows flavorsT)) '(84 18 10)
    (pull flavorsT "double_age") '(84 18 10)
@@ -343,8 +343,8 @@
   (define sdT (read-csv school-shootings))
   
   (chk
-   (row-count sdT) 221
-   (row-count (filter-rows sdT (> killed 0))) 59
+   (count-rows sdT) 221
+   (count-rows (filter-rows sdT (> killed 0))) 59
    )
   
   ;; Using a bigger table
@@ -354,11 +354,11 @@
      
        ;; What about a bigger tbl?
        (length (pull gunsT 'age)) 100798
-       (row-count gunsT) 100798
+       (count-rows gunsT) 100798
        ;; The columns in this table are
        ;; "col0","year","month","intent","police","sex","age","race","hispanic","place","education"
        ;; Check if we can pick three from the table
-       (column-count (pick gunsT "year" "sex" "race")) 3
+       (count-columns (pick gunsT "year" "sex" "race")) 3
        ))
 
     
