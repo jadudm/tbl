@@ -17,7 +17,8 @@
     [(list (? string-or-symbol? name)
            (? (λ (ls) (andmap string-or-symbol? ls)) columns)
            (? (λ (ls) (andmap string-or-symbol? ls)) types))
-     (define conn (sqlite3-connect #:database 'memory))
+     ;; Should these be temporary, or in-memory?
+     (define conn (sqlite3-connect #:database 'temporary))
      ;; Create the backing table
      ;; https://www.sqlite.org/lang_createtable.html#rowid
      ;; ROWID is an INTEGER PRIMARY KEY automatically.

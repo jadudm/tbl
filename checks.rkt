@@ -1,8 +1,10 @@
 #lang racket
 
-(require tbl/types
+(require tbl/basics
+         tbl/types
          tbl/util/util
          tbl/operations
+         raart
          )
 
 (provide (all-defined-out))
@@ -69,6 +71,46 @@
 
 (define (count-if T col pred?)
   (count-true (map pred? (pull T col))))
+
+(define (summary T)
+  (printf "Table: ~a~n" (tbl-name T))
+  (for ([col (tbl-columns T)]
+        [type (tbl-types T)])
+    
+    (match type
+      ['text
+       (printf "Column: ~a~nType: ~a~n" col type)]
+      ['integer
+       (printf "Column: ~a~nType: ~a~n" col type)]
+      ['real
+       (printf "Column: ~a~nType: ~a~n" col type)]
+      ['blob
+       (printf "Column: ~a~nType: ~a~n" col type)]
+      [else
+       (printf "Something...~n")])))
+
+(define (show-table T #:rows [nrows 10] #:width [width 8])
+  (define all-rows (get-rows T))
+  (define truncated
+    (map (λ (row)
+           (map (λ (v h)
+                  (define conv (->string v))
+                  (define the-width (max width (min (string-length h) (string-length conv))))
+                  (define the-string (substring conv 0 (min the-width (string-length conv))))
+                  (when (< (string-length h) (string-length conv))
+                    (set! the-string (string-append the-string "..")))
+                  the-string)
+                row (tbl-columns T)))
+         all-rows))
+  (draw-here (table (text-rows
+                     (append
+                      (list
+                       (tbl-columns T)
+                       (tbl-types T))
+                      (take truncated (min nrows (length truncated)))))))
+  (when (> (count-rows T) nrows)
+    (printf "(only ~a of ~a rows shown)" nrows (count-rows T)))
+  )
 
 #;(module+ test
   (require rackunit/chk
