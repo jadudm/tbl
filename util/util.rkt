@@ -19,3 +19,6 @@
 
 (define (false? o)
   (and (boolean? o) (not o)))
+
+(define shh
+  (lambda args (void)))

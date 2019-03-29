@@ -8,7 +8,9 @@
          tbl/reading/gsheet
          )
 
-(provide (all-defined-out))
+(provide (all-defined-out)
+         (rename-out [pull get-column])
+         )
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
 ;; PULL
@@ -38,6 +40,7 @@
     (add-row! newT row))
   newT                           
   )
+
 
 (define (binop? s)
   (member s '(+ - * / and AND & && or OR || |||| > < >= <= = ==)))
@@ -155,8 +158,7 @@
                                 ;; Drop the ROWID when applying the lookup
                                 #`(arg (rest row)))))
                         ))))
-              
-           ))]))
+           T))]))
 
 ;; Must handle situation where column exists.
 (define (add-column T name type)
@@ -166,9 +168,89 @@
   (define Q (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
                     (tbl-name T)
                     name type))
-  (query-exec (tbl-db T) Q))
+  (query-exec (tbl-db T) Q)
+  T)
   
+(define (remove-ndx n ls)
+  (cond
+    [(empty? ls) empty]
+    [(zero? n) (remove-ndx (sub1 n) (rest ls))]
+    [else
+     (cons (first ls)
+           (remove-ndx (sub1 n) (rest ls)))]))
 
+(define (remove-column T col)
+  (define ndx (index-of (column-names T) col))
+  (define new-columns (remove-ndx ndx (column-names T)))
+  (define new-types   (remove-ndx ndx (tbl-types T)))
+  (define newT (make-tbl (tbl-name T)
+                         new-columns
+                         new-types))
+  ;; Create a new DB of data.
+  (for ([row (get-rows T)])
+    (add-row! newT (remove-ndx ndx row)))
+  ;; Close the old connection
+  (disconnect (tbl-db T))
+  ;; Set the old table to point to the new one.
+  (set-tbl-db! T (tbl-db newT))
+  ;; Update the columns.
+  (set-tbl-columns! T new-columns)
+  (set-tbl-types! T new-types)
+  T)
+                                
+(define (remove-columns T . cols)
+  (for ([c cols])
+    (set! T (remove-column T c)))
+  T)
+
+(define (column-swap T orig new)
+  (list-set (tbl-columns T)
+            (index-of (tbl-columns T) orig)
+            new))
+
+(define (rename-column T old new)
+  (define newT (make-tbl
+                (tbl-name T)
+                (column-swap T old new)
+                (tbl-types T)))
+  (for ([row (get-rows T)])
+    (add-row! newT row))
+  (disconnect (tbl-db T))
+  newT)
+        
+;; The data in the CSV is different from what is published in the paper.
+;; I'm going to drop "genre" and "date.peaked" to be consistent.
+;(set! B (remove-column B "genre"))
+;(set! B (remove-column B "datepeaked"))
+;(set! B (remove-column B "artistinverted"))
+;(set! B (remove-columns B "genre" "datepeaked" "artistinverted"))
+
+(define (melt T . ids)
+  (define colvars (list->set ids))
+  (define columnS (list->set (column-names T)))
+  (define vars    (set-subtract columnS colvars))
+  ;; Now, I need a new table. It needs to contain the ids as columns,
+  ;; and a new column called... melted. (Why reuse "column"?)
+  (define new-types
+    (for/list ([id ids])
+      (list-ref (tbl-types T)
+                (index-of (tbl-columns T) id ))))
+    
+  (define newT (make-tbl (tbl-name T)
+                         (append ids '("variable" "value"))
+                         (append new-types '(text text))))
+  (for ([row (get-rows T)])
+    (define to-insert
+      (for ([id ids])
+      (list-ref row (index-of (tbl-columns T) id ))))
+    (for ([v vars]) 
+      (define value (list-ref row (index-of (tbl-columns T) v)))
+      (add-row! newT
+                (append to-insert (list v value))))
+    )
+  (disconnect (tbl-db T))
+  newT)
+    
 
 ;  ;;;;;;; ;;;;;;   ;;;;; ;;;;;;;  ;;;;; 
 ;     ;    ;       ;     ;   ;    ;     ;

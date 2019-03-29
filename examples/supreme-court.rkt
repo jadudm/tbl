@@ -1,8 +1,11 @@
 #lang racket
 
-(require tbl)
+(require tbl
+         racket/runtime-path)
 
-(define mdbT (read-csv supreme-court-csv))
 
-(row-count mdbT)
-
+;; https://www.epa.gov/outdoor-air-quality-data/download-daily-data
+;; CC0 (Public Domain)
+(define-runtime-path mdaq-csv "maine-daily-aq-2018.csv")
+(define mdaqT (read-csv mdaq-csv))
+(provide mdaqT)

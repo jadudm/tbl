@@ -35,7 +35,7 @@
 (define (λ:not f)
   (λ (v) (not (f v))))
 
-(define (check-table T)
+(define (check-tbl T)
   (check-columns-are? T (tbl-types T)))
   
 (define (check-columns-are? T lot)
@@ -101,7 +101,7 @@
    (column-count T1) 3
    ;;(check-column T "type") true
    ;; "A" "B1T" 
-   (check-table T1) true
+   (check-tbl T1) true
    ;; "A" "B2T" 
    (check-columns-are? T1 '(any any any)) true
    ;; "A" "B3F" 

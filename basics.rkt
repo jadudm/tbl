@@ -56,7 +56,8 @@
            (? list? values))
      ;; Need to find values that are empty, and convert them to SQL-NULL values.
      (set! values (map (λ (v) (if (or (equal? v "")
-                                      (none? v))
+                                      (none? v)
+                                      (equal? v 'none))
                                   "NULL"
                                   v)) values))
      
@@ -86,6 +87,8 @@
   (query-value (tbl-db T) (format "SELECT count(*) FROM ~a" (tbl-name T))))
 
 (define column-names tbl-columns) 
+
+
 
 ;; TESTS
 
@@ -128,7 +131,8 @@
    (length (tbl-types T3))  3
 
    ;; Check if the insert into T5 works.
-   (query-rows (tbl-db T5) (select (.*) #:from (TableRef:INJECT ,(tbl-name T5))))
+   (query-rows (tbl-db T5) (select (.*)
+                                   #:from (TableRef:INJECT ,(tbl-name T5))))
    '(#(1 "apple" 10 1.35) #(2 "kiwi" 20 0.75) #(3 "nuts" 100 0.02))
 
    ;;(printf "~s~n" (column-names T5))
