@@ -61,6 +61,11 @@
  
   h)
 
+(define plot-defaults (default-plot-params))
+(define (reset-plot-defaults)
+  (set! plot-defaults (default-plot-params)))
+(define (set-plot-parameter k v)
+  (hash-set! plot-defaults k v))
 
 (define (limit ls extend percent)
   (define lo (apply min ls))

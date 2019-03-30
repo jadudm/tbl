@@ -170,7 +170,7 @@ The @racket[require] form loads libraries of code in Racket. Once the library is
 @examples[#:eval ev
           #:hidden
           (require (rename-in tbl
-                              [show-table st])
+                              [show-tbl st])
                    tbl/examples)]
 
 @examples[#:eval ev
@@ -185,13 +185,13 @@ A student may want to just @italic{see} the table, before they go any further.
 
 @examples[#:eval ev
           #:hidden
-          (define show-table
+          (define show-tbl
             (lambda (T) (st T #:rows 3 #:cols 5)))]
 
 @(require scribble-abbrevs/latex)
 @examples[#:eval ev
           #:label #f
-          (show-table aq-maine-2018-T)]
+          (show-tbl aq-maine-2018-T)]
 
 Here, I've truncated the table for display in a PDF. Along with a way to see the table's contents, many languages and environments that work with tabular data allow you to get a summary of the table. @racket[tbl] provides the @racket[summary] function for this purpose. Although some languages provide a very terse output form, the assumption is that we are working with novices, and allowing space for the information to breathe can be useful as they attempt to make sense of everything.
 
@@ -211,12 +211,44 @@ The next thing we might want students to do is to develop a quick understanding 
 @examples[#:eval ev
           #:hidden
           (require tbl/plot)
-          (set-plot-default! 'width 180)
-          (set-plot-default! 'height 180)]
+          (set-plot-parameter 'width 120)
+          (set-plot-parameter 'height 120)
+          (plot-file (scatter-renderer aq-maine-2018-T
+                                       "SITE_LONGITUDE"
+                                       "SITE_LATITUDE"
+                                       )
+                     "aq-maine-2018.pdf" 'pdf)
+          ]
+          
+
+@(racketblock
+  (require tbl/plot)
+  (scatterplot aq-maine-2018-T
+               "SITE_LONGITUDE"
+               "SITE_LATITUDE"
+                )
+  )
+
+@(centered
+  (image "aq-maine-2018.pdf" #:scale 0.8))
+
+If one is familiar with the coast of Maine, it becomes (mostly) apparent that the latitude and longitude points (mostly) represent population centers in the state. I can also generate a histogram of PM10 counts for a given site.
 
 @examples[#:eval ev
-          #:label #f
-          (require tbl/plot)
-          (scatter aq-maine-2018-T "SITE_LONGITUDE" "SITE_LATITUDE")
+          plot-defaults]
+
+@examples[#:eval ev
+          #;(define riversideT (filter-rows aq-maine-2018-T (= SiteName "RIVERSIDE")))
+          #;(histogram riversideT "Date" "DailyMeanPM10Concentration")
+          ]
+
+I could generate a histogram of the PM10 counts for a given site. First, I need a unique set of site names.
+@; DailyMeanPM10Concentration
+@; SiteName
+
+@examples[#:eval ev
+          (define sites
+            (unique (get-column aq-maine-2018-T "SiteName")))
+          sites
           ]
 

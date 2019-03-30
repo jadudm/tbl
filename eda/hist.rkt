@@ -2,15 +2,11 @@
 
 (require
   tbl
-  tbl/operations
-  tbl/util/util
-  tbl/eda/types
   tbl/eda/base         
   plot
-  plot/utils
-  racket/draw)
+  )
 
-(provide hist)
+(provide histogram histogram-renderer)
 
 (define (greater-than o1 o2)
   (cond
@@ -19,9 +15,25 @@
     [else (error 'greater-than "Cannot compare strings and numbers: ~a and ~a" o1 o2)]
     ))
 
-(define (hist T factC valC
-              #:compare [comp greater-than]
-              #:order [order '()]) 
+(define (histogram T factC valC)
+  (define params plot-defaults)
+  (printf "p: ~s~n" params)
+  
+  (plot (histogram-renderer T factC valC)
+        #:title   (hash-ref params 'title)
+        #:x-label factC
+        #:y-label "Count"
+        #:x-min   (hash-ref params 'x-min)
+        #:x-max   (hash-ref params 'x-max)
+        #:y-min   (hash-ref params 'y-min)
+        #:y-max   (hash-ref params 'y-max)
+        #:width   (hash-ref params 'width 600)
+        #:height  (hash-ref params 'height 400)
+        ))
+
+(define (histogram-renderer T factC valC
+                            #:compare [comp greater-than]
+                            #:order [order '()]) 
   ;; Use the aggregate package to build the histogram data.
   ;; The first column gives us the factors, the second the data.
   ;; We will aggregate by sum.
@@ -30,8 +42,8 @@
   (cond
     [(not (empty? order))
      (sorted
-       (for/list ([o order])
-         (assoc o hist-data)))]
+      (for/list ([o order])
+        (assoc o hist-data)))]
     [else
      (sorted (sort hist-data greater-than #:key first))])
   ;; Sort this.

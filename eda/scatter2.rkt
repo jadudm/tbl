@@ -6,25 +6,30 @@
          tbl/eda/base2
          )
 
+(provide scatterplot scatter-renderer)
 
-(define scatter-plot
+(define scatterplot
   (match-lambda*
     [(list (? tbl? T)
            (? string? xcol)
            (? string? ycol))
-     (scatter-plot T xcol ycol (default-plot-params))]
+     (scatterplot T xcol ycol plot-defaults)]
     
     [(list (? tbl? T)
            (? string? xcol)
            (? string? ycol)
            (? hash? params))
-     (set! params (merge-params params (default-plot-params)))
-     (define renderer (scatter T xcol ycol params))
+     
+     (set! params (merge-params plot-defaults params))
+     (set-plot-limits! T xcol ycol params)
+     
+     (define renderer (scatter-renderer T xcol ycol params))
+     
      
      (plot renderer
            #:title   (hash-ref params 'title)
-           #:x-label (hash-ref params 'x-label)
-           #:y-label (hash-ref params 'y-label)
+           #:x-label xcol
+           #:y-label ycol
            #:x-min   (hash-ref params 'x-min)
            #:x-max   (hash-ref params 'x-max)
            #:y-min   (hash-ref params 'y-min)
@@ -33,19 +38,19 @@
            #:height  (hash-ref params 'height 400)
      )]))
    
-(define scatter
+(define scatter-renderer
   (match-lambda*
     [(list (? tbl? T)
            (? string? xcol)
            (? string? ycol))
-     (scatter T xcol ycol (default-plot-params))]
+     (scatter-renderer T xcol ycol plot-defaults)]
     [(list (? tbl? T)
            (? string? xcol)
            (? string? ycol)
            (? hash? params))
      ;; Merge the user params into the default params.
      ;; If we dupicate defaults, it's OK.
-     (set! params (merge-params (default-plot-params) params))
+     (set! params (merge-params plot-defaults params))
      
      (define pts
        (map (λ (x y) (vector x y))
@@ -73,5 +78,6 @@
 (require tbl)
 (define T (read-gsheet "https://tinyurl.com/yx8nswkz"))
 (scatter-plot T "age" "age"
-              (params (x-min 0) (x-max 200) (y-min 0) (y-max 200)))
+              ;;(params (x-min 0) (x-max 200) (y-min 0) (y-max 200))
+              )
 |#
