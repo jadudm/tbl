@@ -18,5 +18,5 @@
   (define Q (format "SELECT * FROM ~a" table-name))
   (for ([row (query-rows conn Q)])
     ;; Drop the rowid?
-    (add-row! newT (rest (vector->list row))))
+    (add-row newT (rest (vector->list row))))
   newT)

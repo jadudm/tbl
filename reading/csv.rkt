@@ -44,7 +44,7 @@
      (define headers (cleanup-column-names (first rows)))
      (define T (make-tbl name headers types))
      (for ([row (rest rows)])
-       (add-row! T row))
+       (add-row T row))
      T]
 
     ;; If they give us a file or a path
