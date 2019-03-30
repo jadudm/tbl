@@ -61,7 +61,7 @@
   (query-exec conn S)
   
   (for ([f columns] [t types])
-    (add-column! T f t))
+    (add-column T f t))
   T
   )
 
@@ -83,18 +83,21 @@
 ;; FIXME
 ;; Make sure fields conform to SQL naming conventions
 ;; Make sure types are valid.
-(define (add-column! T column type)
+;; Must handle situation where column exists.
+(define (add-column T column type)
   (define cleaned (clean-column-name column))
+  (set-tbl-columns! T (snoc cleaned (tbl-columns T)))
+  (set-tbl-types!  T (snoc type (tbl-types T)))
   
   (define S (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
                     (tbl-name T)
                     cleaned (tbl-type->sqlite-type type)))
-  (set-tbl-columns! T (snoc cleaned (tbl-columns T)))
-  (set-tbl-types!  T (snoc type (tbl-types T)))
+  
   ;; (printf "~s~n" S)
-  (query-exec (tbl-db T) S))
+  (query-exec (tbl-db T) S)
+  T)
 
-(define add-row!
+(define add-row
   (match-lambda*
     [(list (? tbl? T)
            (? list? values))
@@ -116,12 +119,12 @@
     ;; If I'm given a vector
     [(list (? tbl? T)
            (? vector? values))
-     (add-row! T (vector->list values))]
+     (add-row T (vector->list values))]
 
     ;; Or, if we have values passed in as parameters.
     [(list (? tbl? T)
            values ...)
-     (add-row! T values)]
+     (add-row T values)]
     ))
 
 (define (count-columns T)
@@ -154,18 +157,18 @@
 
   ;; Adding a column
   (define T4 (make-tbl))
-  (add-column! T4 'bob 'integer)
+  (add-column T4 'bob 'integer)
   ;; Adding a row
-  (add-row! T4 '(1))
+  (add-row T4 '(1))
 
   ;; A more table
   (define T5 (make-tbl "grocery"
                        '(product qty cost)
                        '(text integer real)))
-  (add-row! T5 '(apple 10 1.35))
-  (add-row! T5 '(kiwi  20 0.75))
+  (add-row T5 '(apple 10 1.35))
+  (add-row T5 '(kiwi  20 0.75))
   ;; Check that the .args version works.
-  (add-row! T5 'nuts 100 0.02)
+  (add-row T5 'nuts 100 0.02)
 
   (chk
    #:t (tbl? (make-tbl))

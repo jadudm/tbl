@@ -37,7 +37,7 @@
                                           (index-of columns col)))
                               columns)))
   (for ([row rows])
-    (add-row! newT row))
+    (add-row newT row))
   newT                           
   )
 
@@ -105,7 +105,7 @@
                          (tbl-types T)))
   (for ([row rows])
     ;; Drop the ROWID when inserting.
-    (add-row! newT (rest (vector->list row))))
+    (add-row newT (rest (vector->list row))))
   newT)
 
 (define-syntax-rule (filter-rows T Q)
@@ -165,17 +165,6 @@
                                 #`(arg (rest row)))))
                         ))))
            T))]))
-
-;; Must handle situation where column exists.
-(define (add-column T name type)
-  ;; Add it to the list of column names and types
-  (set-tbl-columns! T (append (tbl-columns T) (list name)))
-  (set-tbl-types!   T (append (tbl-types T) (list type)))
-  (define Q (format "ALTER TABLE ~a ADD COLUMN ~a ~a"
-                    (tbl-name T)
-                    name type))
-  (query-exec (tbl-db T) Q)
-  T)
   
 (define (remove-ndx n ls)
   (cond
@@ -194,7 +183,7 @@
                          new-types))
   ;; Create a new DB of data.
   (for ([row (get-rows T)])
-    (add-row! newT (remove-ndx ndx row)))
+    (add-row newT (remove-ndx ndx row)))
   ;; Close the old connection
   (disconnect (tbl-db T))
   ;; Set the old table to point to the new one.
@@ -220,7 +209,7 @@
                 (column-swap T old new)
                 (tbl-types T)))
   (for ([row (get-rows T)])
-    (add-row! newT row))
+    (add-row newT row))
   (disconnect (tbl-db T))
   newT)
         
@@ -251,7 +240,7 @@
       (list-ref row (index-of (tbl-columns T) id ))))
     (for ([v vars]) 
       (define value (list-ref row (index-of (tbl-columns T) v)))
-      (add-row! newT
+      (add-row newT
                 (append to-insert (list v value))))
     )
   (disconnect (tbl-db T))

@@ -169,17 +169,17 @@
     (define T (make-tbl "donuts"
                         '(type topping cost)
                         '(text text number)))
-    (add-row! T (list "plain" "A" 0.75))
-    (add-row! T (list "cake" "A" 1.00))
-    (add-row! T (list "chocolate" "glazed" 1.25))
+    (add-row T (list "plain" "A" 0.75))
+    (add-row T (list "cake" "A" 1.00))
+    (add-row T (list "chocolate" "glazed" 1.25))
     T)
   (define (make-donut-table-2)
     (define T (make-tbl "donuts"
                         '(type topping cost)
                         '(text text number)))
-    (add-row! T (list "plain" none 0.75))
-    (add-row! T (list "cake" none 1.00))
-    (add-row! T (list "chocolate" "glazed" 1.25))
+    (add-row T (list "plain" none 0.75))
+    (add-row T (list "cake" none 1.00))
+    (add-row T (list "chocolate" "glazed" 1.25))
     T)
 
   (define T1 (make-donut-table-1))
