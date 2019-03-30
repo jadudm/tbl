@@ -27,6 +27,9 @@
      (define rows
        (csv->list (make-csv-reader csv spec)))
 
+     ;; (printf "ROWS: ~n~s~n" (length rows))
+     ;;(printf "ROWS: ~n~s~n" rows)
+     
      ;; Guess the types
      (define types
        (for/list ([ndx (range (length (first rows)))])

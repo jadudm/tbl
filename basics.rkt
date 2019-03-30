@@ -9,33 +9,76 @@
 ;; FIXME: Get contract-out in place.
 (provide (all-defined-out))
 
+(define (write-meta-file base-name name columns types)
+  (define (hash-write of k v)
+    (cond
+      [(or (symbol? v) (string? v))
+       (write `(hash-set! permanent-tbl (quote ,k) ,(format "~a" v)) of)]
+      [else
+       (write `(hash-set! permanent-tbl (quote ,k) (quote ,v)) of)])
+    (newline of))
+  
+  (define of (open-output-file (format "~a.tbl" base-name)))
+  (fprintf of "#lang racket~n~n")
+  (write '(provide permanent-tbl) of)
+  (newline of)
+  
+  (write '(define permanent-tbl (make-hash)) of)
+  (hash-write of 'base-filename base-name)
+  (hash-write of 'name name)
+  (hash-write of 'columns columns)
+  (hash-write of 'types types)
+  (close-output-port of)
+  )
+  
+(define (make-tbl* name columns types #:keep [keep false])
+  (define conn (void))
+  
+  ;; Should these be temporary, or in-memory?
+  (cond
+    [keep
+     (define tbl-base-filename (format "~a-~a" name (current-seconds)))
+     (define sqlite-name (format "~a.sqlite" tbl-base-filename))
+    
+     (let ([p (open-output-file sqlite-name)])
+       (close-output-port p))
+     (write-meta-file tbl-base-filename name columns types)
+     (set! conn (sqlite3-connect #:database sqlite-name))]
+    [(not keep)
+     (set! conn (sqlite3-connect #:database 'temporary))]
+    )
+
+  ;; Create the backing table
+  ;; https://www.sqlite.org/lang_createtable.html#rowid
+  ;; ROWID is an INTEGER PRIMARY KEY automatically.
+  ;; So... perhaps we do not need an index column?
+  (define S
+    (format "CREATE TABLE ~a (rowid INTEGER PRIMARY KEY)"
+            (clean-sql-table-name name)))
+  (define T
+    (tbl (clean-sql-table-name name) 'sqlite3 empty empty conn))
+  ;; (printf "~s~n" S)
+  (query-exec conn S)
+  
+  (for ([f columns] [t types])
+    (add-column! T f t))
+  T
+  )
+
 (define make-tbl
   (match-lambda*
     ['() (make-tbl "coffee" empty empty)]
     [(list (? string-or-symbol? name))
-     (make-tbl (~a name) empty empty)]
+     (make-tbl* (~a name) empty empty #:keep false)]
     [(list (? string-or-symbol? name)
            (? (λ (ls) (andmap string-or-symbol? ls)) columns)
            (? (λ (ls) (andmap string-or-symbol? ls)) types))
-     ;; Should these be temporary, or in-memory?
-     (define conn (sqlite3-connect #:database 'temporary))
-     ;; Create the backing table
-     ;; https://www.sqlite.org/lang_createtable.html#rowid
-     ;; ROWID is an INTEGER PRIMARY KEY automatically.
-     ;; So... perhaps we do not need an index column?
-     (define S
-       (format "CREATE TABLE ~a (rowid INTEGER PRIMARY KEY)"
-               (clean-sql-table-name name)))
-     (define T
-       (tbl (clean-sql-table-name name) 'sqlite3 empty empty conn))
-     ;; (printf "~s~n" S)
-     (query-exec conn S)
-     
-     (for ([f columns] [t types])
-       (add-column! T f t))
-     T
+     (make-tbl* name columns types #:keep false)
      ]
     ))
+
+(define (make-permanent-tbl name columns types)
+  (make-tbl* name columns types #:keep true))
 
 ;; FIXME
 ;; Make sure fields conform to SQL naming conventions

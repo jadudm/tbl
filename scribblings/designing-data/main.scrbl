@@ -167,19 +167,56 @@ To begin using example data from the library, a programmer begins by importing t
 
 The @racket[require] form loads libraries of code in Racket. Once the library is loaded, students can begin working with any number of exemplar datasets. For example, we can look at the PM10 air quality data from the state of Maine in 2018. The first thing a student should learn to do is to do some basic exploration of the data table, perhaps beginning with checking the table for how many rows and columns the data has.
 
+@examples[#:eval ev
+          #:hidden
+          (require (rename-in tbl
+                              [show-table st])
+                   tbl/examples)]
 
 @examples[#:eval ev
           #:label #f
-          (require tbl
-                   tbl/examples)
           (check-tbl aq-maine-2018-T)
           (count-rows aq-maine-2018-T)
           (count-columns aq-maine-2018-T)]
 
 The first function students should learn is @racket[check-tbl]. This makes sure that there are no missing values in the table, and the data in every column is of the correct type. For example, it makes sure that if a column claims to contain integers, that all of the data in that column actually conforms to the type expectations. If everything checks, the function returns @racket[true]. If anything is amiss, errors are reported, and the function returns @racket[false]. After that, it is good to know how many rows and columns are in the table.
 
-Many languages and environments that work with tabular data allow you to get a summary of the table. @racket[tbl] provides the @racket[summary] function for this purpose.
+A student may want to just @italic{see} the table, before they go any further.
+
+@examples[#:eval ev
+          #:hidden
+          (define show-table
+            (lambda (T) (st T #:rows 3 #:cols 5)))]
+
+@(require scribble-abbrevs/latex)
+@examples[#:eval ev
+          #:label #f
+          (show-table aq-maine-2018-T)]
+
+Here, I've truncated the table for display in a PDF. Along with a way to see the table's contents, many languages and environments that work with tabular data allow you to get a summary of the table. @racket[tbl] provides the @racket[summary] function for this purpose. Although some languages provide a very terse output form, the assumption is that we are working with novices, and allowing space for the information to breathe can be useful as they attempt to make sense of everything.
+
+There are two forms of summary: one that only takes the name of the table (and outputs a summary for every column), and one that takes both the table and a column name, allowing the student to be specific about what column they want a summary of. Here, I demonstrate a summary of a string column and an integer column, primarily because the full summary of 18 columns is multiple pages long.
+
 
 @examples[#:eval ev
           #:label #f
-          (summary aq-maine-2018-T)]
+          (summary aq-maine-2018-T "SiteName")
+          (summary aq-maine-2018-T "DailyMeanPM10Concentration")]
+
+@(exact "\\newpage")
+@subsection{Visualizing the Table}
+
+The next thing we might want students to do is to develop a quick understanding of how some of the values in the table relate to each-other. There are several visualization tools included in the @racket[tbl] library for this purpose.
+
+@examples[#:eval ev
+          #:hidden
+          (require tbl/plot)
+          (set-plot-default! 'width 180)
+          (set-plot-default! 'height 180)]
+
+@examples[#:eval ev
+          #:label #f
+          (require tbl/plot)
+          (scatter aq-maine-2018-T "SITE_LONGITUDE" "SITE_LATITUDE")
+          ]
+

@@ -53,9 +53,12 @@
 
 (define (monop? op)
   (member op '(not !=)))
+
 (define (->monop o)
   (case o
-    [(not !=) 'NOT]))
+    [(not !=) 'NOT]
+    [(not-na not-null) "IS NOT NULL"]
+    ))
 
 (define (->infix exp col-names)
   (match exp
@@ -67,6 +70,8 @@
          (quote-sql (->string s))
          )
      ]
+    [(list (or 'not-na 'not-null) rand)
+     (format "(~a IS NOT NULL)" rand)]
     [(list (? monop? op) rand)
      (format "~a (~a)" (->monop op) (->infix rand col-names))]
     [(list (? binop? op) lhs rhs)
@@ -84,6 +89,7 @@
 ;; dplyr uses "filter()", which is taken by Racket.
 ;; should I use "-table" on table operations?
 ;; pull-from-table, filter-table, ... ?
+
 (define (filter-rows:Q T quotedQ)
   (define names (column-names T))
   ;; (printf "~s~n" names)
@@ -92,7 +98,7 @@
   (define Q (select (.*)
                     #:from (TableRef:INJECT ,(tbl-name T))
                     #:where (ScalarExpr:INJECT ,infixQ)))
-  ;; (printf "Q: ~s~n" Q)
+  ;;(printf "Q: ~s~n" Q)
   (define rows (query-rows (tbl-db T) Q))
   (define newT (make-tbl (format "~a_filtered" (tbl-name T))
                          (tbl-columns T)

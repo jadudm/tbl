@@ -37,21 +37,22 @@
              series-names)))
   )
 
+
 (define (eda-x/y T x-series y-series
                  #:color            [color           (hash-ref plot-defaults 'color)]
-                  #:fill-color       [fill-color      (hash-ref plot-defaults 'fill-color)]
+                 #:fill-color       [fill-color      (hash-ref plot-defaults 'fill-color)]
 
-                  #:color-by         [color-by        (hash-ref plot-defaults 'color-by)]
-                  #:category-colors  [category-colors (hash-ref plot-defaults 'category-colors)]
+                 #:color-by         [color-by        (hash-ref plot-defaults 'color-by)]
+                 #:category-colors  [category-colors (hash-ref plot-defaults 'category-colors)]
 
-                  #:solid?           [solid?          (hash-ref plot-defaults 'solid?)]
+                 #:solid?           [solid?          (hash-ref plot-defaults 'solid?)]
 
-                  #:x-label          [x-label         (hash-ref plot-defaults 'x-label)]
-                  #:y-label          [y-label         (hash-ref plot-defaults 'y-label)]
+                 #:x-label          [x-label         (hash-ref plot-defaults 'x-label)]
+                 #:y-label          [y-label         (hash-ref plot-defaults 'y-label)]
 
-                  #:width            [width (hash-ref plot-defaults 'width)]
-                  #:height           [height (hash-ref plot-defaults 'height)]
-                  )
+                 #:width            [width (hash-ref plot-defaults 'width)]
+                 #:height           [height (hash-ref plot-defaults 'height)]
+                 )
   
   (define params (override-params x-series y-series color
                                   fill-color color-by category-colors solid?
@@ -82,7 +83,8 @@
   (plot-font-family (hash-ref params 'font-family))
   
   ;; Do the plot.
-  (eda params (scatterplot T params)))
+  (show (eda params (scatterplot T params)))
+  )
 
 (define scatter eda-x/y)
 (define x/y eda-x/y)

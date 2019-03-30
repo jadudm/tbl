@@ -1,16 +1,16 @@
 #lang racket
 
-(require tbl/eda/base
-         tbl/eda/scatter
-         tbl/eda/hist
+(require tbl/eda/base2
+         tbl/eda/scatter2
+         ;; tbl/eda/hist
 
          plot
          )
 
 (provide (all-from-out
-          tbl/eda/base
-          tbl/eda/scatter
-          tbl/eda/hist
+          tbl/eda/base2
+          tbl/eda/scatter2
+          ;; tbl/eda/hist
 
           plot
           ))

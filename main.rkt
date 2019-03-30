@@ -18,7 +18,10 @@ Thereafter your "make" is:
          "operations.rkt"
          "reading/csv.rkt"
          "reading/gsheet.rkt"
+         "reading/sqlite.rkt"
 
+         "writing/csv.rkt"
+         
          "types.rkt"
          "test/files.rkt"
          
@@ -36,6 +39,9 @@ Thereafter your "make" is:
           
           "reading/csv.rkt"
           "reading/gsheet.rkt"
+          "reading/sqlite.rkt"
+
+          "writing/csv.rkt"
           
           "types.rkt"
           "test/files.rkt"

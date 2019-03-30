@@ -9,6 +9,13 @@
 (provide (all-defined-out))
 
 
+(define-syntax (params stx)
+  (syntax-case stx ()
+    [(_p (key val) ...)
+     #`(let ([h (make-hash)])
+         (begin (hash-set! h (quote key) val) ...)
+         h)]))
+
 ;; FIXME FIXME FIXME
 ;; My renderers should produce... er, renderers.
 ;; This should play nice with Racket's plot package.
@@ -23,10 +30,10 @@
    (plot (thaw (eda-thunk tps))
          #:x-label (hash-ref (eda-params tps) 'x-label)
          #:y-label (hash-ref (eda-params tps) 'y-label)
-         #:x-min   (hash-ref (eda-params tps) 'x-min)
-         #:x-max   (hash-ref (eda-params tps) 'x-max)
-         #:y-min   (hash-ref (eda-params tps) 'y-min)
-         #:y-max   (hash-ref (eda-params tps) 'y-max)
+         #:x-min   0 ; (hash-ref (eda-params tps) 'x-min)
+         #:x-max   200 ; (hash-ref (eda-params tps) 'x-max)
+         #:y-min   0 ; (hash-ref (eda-params tps) 'y-min)
+         #:y-max   200 ; (hash-ref (eda-params tps) 'y-max)
          #:width   (hash-ref (eda-params tps) 'width 600)
          #:height  (hash-ref (eda-params tps) 'height 400)
          )))
@@ -86,7 +93,8 @@
     (hash-set! h k v))
   h)
 (define plot-defaults (default-plot-params (make-hash)))
-
+(define (set-plot-default! k v)
+  (hash-set! plot-defaults k v))
 
 (define-syntax (override-params stx)
   (syntax-case stx ()

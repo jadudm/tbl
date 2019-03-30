@@ -25,7 +25,6 @@
 ;; (show (scatter cleanGT1 "year" "age"))
 ;; (show (scatter cleanGT2 "year" "age"))
 
-
 (require tbl)
 (define csv "http://bit.ly/wp-gun-deaths-csv")
 (define gT (read-csv csv))
