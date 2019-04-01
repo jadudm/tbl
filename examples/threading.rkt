@@ -14,8 +14,8 @@
 (~> "http://bit.ly/wp-gun-deaths-csv"
     read-csv
     (filter-rows (> killed 0))
-    (hist "day_of_week" "killed")
-    plot)
+    (histogram "day_of_week" "killed")
+    )
 
 (define (one-of? w low)
   (ormap (λ (o) (string-contains? w o)) low))
@@ -43,6 +43,6 @@
     (add-column "weapon_type" Text)
     (compute "weapon_type"
              (function (weapon) (weapon->type weapon)))
-    (hist "weapon_type" "killed")
-    plot)
+    (histogram "weapon_type" "killed")
+    )
 

@@ -56,13 +56,14 @@
 
   ;: I only want 10 labels.
   (define bars (map list->vector (sorted)))
-  (for ([i (range (length bars))])
-    #;(printf "i ~a r ~a b ~a~n"
-            i (modulo i (quotient (length bars) 10))
-            (and (not (zero? i)) (zero? (modulo i (quotient (length bars) 10)))))
-    (unless (and #;(not (zero? i)) (zero? (modulo i (quotient (length bars) 10))))
-      (vector-set! (list-ref bars i) 0 "")))
-  #;(printf "~a~n" bars)
+  (when (> (length bars) 10)
+    (for ([i (range (length bars))])
+      #;(printf "i ~a r ~a b ~a~n"
+                i (modulo i (quotient (length bars) 10))
+                (and (not (zero? i)) (zero? (modulo i (quotient (length bars) 10)))))
+      (unless (and (not (zero? i)) (zero? (modulo i (quotient (length bars) 10))))
+        (vector-set! (list-ref bars i) 0 "")))
+    #;(printf "~a~n" bars))
   
   (discrete-histogram 
                       #:y-max   (hash-ref paramsH 'y-max)
