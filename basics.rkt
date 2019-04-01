@@ -138,9 +138,10 @@
 (define-syntax (quietly stx)
   (syntax-case stx ()
     [(_ bodies ...)
-     #`(begin
+     #`(let ()
          bodies ...
-         (void))]))
+         (void)
+         )]))
   
 (define lookup
   (match-lambda*
