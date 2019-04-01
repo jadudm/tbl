@@ -134,16 +134,22 @@
   ))
    
 
+;; FIXME
+;; This is crap. It does not do what I want it to do.
+;; Also, there should be a "display.rkt" for this kind of thing,
+;; not bury it under "checks".
 (define (show-tbl T #:rows [nrows 10] #:width [width 8] #:cols [ncols 0])
   (define all-rows (get-rows T))
   (when (zero? ncols)
     (set! ncols (length (tbl-columns T))))
+  (when (zero? nrows)
+    (set! nrows (count-rows T)))
   (define truncated
     (map (λ (row)
            (map (λ (v h)
                   (define conv (->string v))
                   (define the-width (max width (min (string-length h) (string-length conv))))
-                  (define the-string (substring conv 0 (min the-width (string-length conv))))
+                  (define the-string (substring conv 0 the-width #;(min the-width (string-length conv))))
                   (when (< (string-length h) (string-length conv))
                     (set! the-string (string-append the-string "..")))
                   the-string)

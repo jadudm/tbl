@@ -5,12 +5,12 @@
                     '("person" "treatment" "result")
                     '(text integer integer)))
 
-(add-row! T "John Smith" "a" none)
-(add-row! T "Jane Doe" "a" 16)
-(add-row! T "Mary Johnson" "a" 3)
-(add-row! T "John Smith" "b" 2)
-(add-row! T "Jane Doe" "b" 11)
-(add-row! T "Mary Johnson" "b" 1)
+(add-row T "John Smith" "a" none)
+(add-row T "Jane Doe" "a" 16)
+(add-row T "Mary Johnson" "a" 3)
+(add-row T "John Smith" "b" 2)
+(add-row T "Jane Doe" "b" 11)
+(add-row T "Mary Johnson" "b" 1)
 
 
 ;; Variables and observations
@@ -44,9 +44,9 @@
 (define M (make-tbl "Melt"
                     '("rw" "a" "b" "c")
                     '(text integer integer integer)))
-(add-row! M '(A 1 4 7))
-(add-row! M '(B 2 5 8))
-(add-row! M '(C 3 6 9))
+(add-row M '(A 1 4 7))
+(add-row M '(B 2 5 8))
+(add-row M '(C 3 6 9))
 
 
 #|
@@ -77,7 +77,7 @@ COMMIT;
                          new-columns
                          new-types))
   (for ([row (get-rows T)])
-    (add-row! newT (remove-ndx ndx row)))
+    (add-row newT (remove-ndx ndx row)))
   ;; Close the old connection
   (disconnect (tbl-db T))
   ;; Set the old table to point to the new one.
@@ -99,7 +99,7 @@ COMMIT;
                 (column-swap T old new)
                 (tbl-types T)))
   (for ([row (get-rows T)])
-    (add-row! newT row))
+    (add-row newT row))
   (disconnect (tbl-db T))
   newT)
         
@@ -110,7 +110,7 @@ COMMIT;
 ;(set! B (remove-column B "artistinverted"))
 ;(set! B (remove-columns B "genre" "datepeaked" "artistinverted"))
 
-(define (melt T . ids)
+#;(define (melt T . ids)
   (define colvars (list->set ids))
   (define columnS (list->set (column-names T)))
   (define vars    (set-subtract columnS colvars))
@@ -130,7 +130,7 @@ COMMIT;
       (list-ref row (index-of (tbl-columns T) id ))))
     (for ([v vars]) 
       (define value (list-ref row (index-of (tbl-columns T) v)))
-      (add-row! newT
+      (add-row newT
                 (append to-insert (list v value))))
     )
   (disconnect (tbl-db T))
@@ -146,7 +146,7 @@ COMMIT;
   (set! B (remove-columns B "datepeaked"))
   (set! B (rename-column B "artistinverted" "artist"))
   (set! B (melt B "year" "artist" "time" "track" "genre" "dateentered"))
-  (add-column! B "week" Integer)
+  (add-column B "week" Integer)
   (printf "~s~n" (column-names B))
   (set! B
         (compute B "week" (function (variable)
@@ -157,6 +157,6 @@ COMMIT;
   B
   )
 (define newB (billboard))
-(row-count newB)
-(column-count newB)
+(count-rows newB)
+(count-columns newB)
 (take (get-rows newB) 5)

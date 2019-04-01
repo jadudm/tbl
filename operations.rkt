@@ -236,12 +236,14 @@
                          (append new-types '(text text))))
   (for ([row (get-rows T)])
     (define to-insert
-      (for ([id ids])
-      (list-ref row (index-of (tbl-columns T) id ))))
+      (for/list ([id ids])
+        (list-ref row (index-of (tbl-columns T) id ))))
     (for ([v vars]) 
       (define value (list-ref row (index-of (tbl-columns T) v)))
+      ;;(printf "ti: ~a~n" to-insert)
+      ;;(printf "lvv: ~a~n" (list v value))
       (add-row newT
-                (append to-insert (list v value))))
+               (append to-insert (list v value))))
     )
   (disconnect (tbl-db T))
   newT)
@@ -325,8 +327,8 @@
    ;; FIXME When I handle params that are not named correctly,
    ;; this test may need to be updated.
    #:exn (compute flavorsT
-                "double_age"
-                (function (agex) (* agex 2)))
+                  "double_age"
+                  (function (agex) (* agex 2)))
    exn:fail?
    
    (count-columns flavorsT) 4
