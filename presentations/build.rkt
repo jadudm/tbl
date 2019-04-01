@@ -1,7 +1,8 @@
 #lang at-exp slideshow/widescreen
 (require slideshow/text
-          slideshow/code
-          pict)
+         (only-in scribble/base centered)
+         slideshow/code
+         pict)
 
 (current-main-font "Cabin Condensed Medium")
 (current-font-size 36)
@@ -12,11 +13,13 @@
 
 (slide #:title "Building Worlds and Tools For Their Study"
        #:layout 'center
+       (t (format "~a ~a~a" "(or," @italic{Teaching Programming for Learning} ")"))
        (t "Matt Jadud")
        (t "Sometime 2019"))
 
 (slide #:title "Outline"
        #:layout 'top
+       ;;(item "Goals")
        (item "Worlds")
        (item "The Toolkit")
        (item "Tools")

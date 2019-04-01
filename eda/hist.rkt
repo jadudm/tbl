@@ -2,7 +2,7 @@
 
 (require
   tbl
-  tbl/eda/base         
+  tbl/eda/base2         
   plot
   )
 
@@ -16,24 +16,26 @@
     ))
 
 (define (histogram T factC valC)
-  (define params plot-defaults)
-  (printf "p: ~s~n" params)
+  (define paramsH plot-defaults)
+  ;; (printf "p: ~s~n" paramsH)
+  ;; (set-plot-limits! T xcol ycol params)
   
-  (plot (histogram-renderer T factC valC)
-        #:title   (hash-ref params 'title)
-        #:x-label factC
-        #:y-label "Count"
-        #:x-min   (hash-ref params 'x-min)
-        #:x-max   (hash-ref params 'x-max)
-        #:y-min   (hash-ref params 'y-min)
-        #:y-max   (hash-ref params 'y-max)
-        #:width   (hash-ref params 'width 600)
-        #:height  (hash-ref params 'height 400)
-        ))
+
+  (parameterize ([plot-x-tick-label-anchor  'top-right]
+                 [plot-x-tick-label-angle   30])
+    (plot (histogram-renderer T factC valC #:params paramsH)
+          #:title   (hash-ref paramsH 'title)
+          #:x-label factC
+          #:y-label "Count"
+          
+          #:width   (hash-ref paramsH 'width 600)
+          #:height  (hash-ref paramsH 'height 400)
+          )))
 
 (define (histogram-renderer T factC valC
                             #:compare [comp greater-than]
-                            #:order [order '()]) 
+                            #:order [order '()]
+                            #:params [paramsH plot-defaults]) 
   ;; Use the aggregate package to build the histogram data.
   ;; The first column gives us the factors, the second the data.
   ;; We will aggregate by sum.
@@ -48,4 +50,21 @@
      (sorted (sort hist-data greater-than #:key first))])
   ;; Sort this.
   ;; (printf "SORTED: ~s~n" (sorted))
-  (discrete-histogram (map list->vector (sorted))))
+  (define mx (apply max (get-column T valC)))
+  (hash-set! paramsH 'y-max (+ mx (* mx
+                                     (hash-ref paramsH 'plot-limit-percent-offset))))
+
+  ;: I only want 10 labels.
+  (define bars (map list->vector (sorted)))
+  (for ([i (range (length bars))])
+    #;(printf "i ~a r ~a b ~a~n"
+            i (modulo i (quotient (length bars) 10))
+            (and (not (zero? i)) (zero? (modulo i (quotient (length bars) 10)))))
+    (unless (and #;(not (zero? i)) (zero? (modulo i (quotient (length bars) 10))))
+      (vector-set! (list-ref bars i) 0 "")))
+  #;(printf "~a~n" bars)
+  
+  (discrete-histogram 
+                      #:y-max   (hash-ref paramsH 'y-max)
+                      bars
+                      ))

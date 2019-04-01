@@ -135,9 +135,47 @@
 
 (define column-names tbl-columns) 
 
+(define-syntax (quietly stx)
+  (syntax-case stx ()
+    [(_ bodies ...)
+     #`(begin
+         bodies ...
+         (void))]))
+  
+(define lookup
+  (match-lambda*
+    [(list (? tbl? T)
+           (? list? row)
+           (? string? col))
+     (lookup row
+             (index-of (tbl-columns T)
+                       (format "~a" col)
+                       ))]
+    [(list (? list? row)
+           (? number? col))
+     (list-ref row col)]))
 
+;; FIXME
+;; Is rowid from 1 or zero?
+(define (get-row T row-ndx)
+  (define Q (format "SELECT * FROM ~a WHERE rowid = ~a"
+                    (tbl-name T) (add1 row-ndx)))
+  ;; Don't forget to drop the row ID.
+  (rest (vector->list (query-row (tbl-db T) Q))))
 
-;; TESTS
+;  ;;;;;;; ;;;;;;   ;;;;; ;;;;;;;  ;;;;; 
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;         ;    ;      
+;     ;    ;;;;;;   ;;;;;    ;     ;;;;; 
+;     ;    ;             ;   ;          ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;       ;     ;   ;    ;     ;
+;     ;    ;;;;;;   ;;;;;    ;     ;;;;; 
+;                                        
+;                                        
+;                                        
+
 
 (module+ test
   (require rackunit/chk)
@@ -184,3 +222,5 @@
 
    ;;(printf "~s~n" (column-names T5))
    ))
+
+
