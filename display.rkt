@@ -132,11 +132,15 @@
   
   (for (([row index] (in-indexed truncated)))
     (define font
-      (if (= index 0) ;; header
-          (send the-font-list find-or-create-font 12 'default 'normal 'normal)
-          (send the-font-list find-or-create-font 10 'default 'normal 'normal)))
+      (cond
+        [(= index 0) ;; header
+         (send the-font-list find-or-create-font 12 'default 'normal 'normal)]
+        [(= index 1)
+         (send the-font-list find-or-create-font 8 'default 'normal 'normal)]
+        [else
+         (send the-font-list find-or-create-font 10 'default 'normal 'normal)]))
     (define color
-      (if (= index 0)
+      (if (or (= index 0) (= index 1))
           (make-object color% #x77 #x88 #x99)
           (make-object color% #x2f #x4f #x4f)))
     (define face (cons color font))

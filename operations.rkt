@@ -43,12 +43,17 @@
   )
 
 
-(define (binop? s)
-  (member s '(+ - * / and AND & && or OR || |||| > < >= <= = ==)))
-(define (->binop s)
+(define (logop? s)
+  (member s '(and AND & && or OR || ||||)))
+(define (->logop s)
   (case s
     [(and & &&) 'AND]
-    [(or || ||||) 'OR]
+    [(or || ||||) 'OR]))
+
+(define (binop? s)
+  (member s '(+ - * / > < >= <= = ==)))
+(define (->binop s)
+  (case s
     [(==) '=]
     [else s]))
 
@@ -77,6 +82,10 @@
      (format "~a (~a)" (->monop op) (->infix rand col-names))]
     [(list (? binop? op) lhs rhs)
      (format "(~a ~a ~a)" (->infix lhs col-names) (->binop op) (->infix rhs col-names))]
+    [(list (? logop? op) args ...)
+     (apply string-append
+      (add-between (map (λ (rand) (format "~a" (->infix rand col-names))) args)
+                   (format " ~a " (->logop op))))]
     ))
 
 ;; FIXME
@@ -162,6 +171,11 @@
   T
   )
 
+;; FIXME
+;; There's a lot of errors I have to catch.
+;; For example, what happens if they use a param that
+;; is not a table column? It throws an error about the arg.
+;; Also, if the column name given doesn't exist?
 (define-syntax (compute stx)
   (syntax-case stx ()
     [(_c T new-row
