@@ -14,6 +14,8 @@
     (strip-leading-whitespace?  . #t)
     (strip-trailing-whitespace? . #t)))
 
+;; FIXME
+;; This should really handle its inputs better.
 (define (read-csv csv
                   #:header-row? [header-row? true]
                   #:name [name "csv"])

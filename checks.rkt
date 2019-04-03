@@ -138,7 +138,7 @@
 ;; This is crap. It does not do what I want it to do.
 ;; Also, there should be a "display.rkt" for this kind of thing,
 ;; not bury it under "checks".
-(define (show-tbl T #:rows [nrows 10] #:width [width 8] #:cols [ncols 0])
+(define (show-tbl T #:rows [nrows 10] #:width [width 8] #:columns [ncols 0])
   (define all-rows (get-rows T))
   (when (zero? ncols)
     (set! ncols (length (tbl-columns T))))
@@ -148,11 +148,18 @@
     (map (λ (row)
            (map (λ (v h)
                   (define conv (->string v))
-                  (define the-width (max width (min (string-length h) (string-length conv))))
-                  (define the-string (substring conv 0 the-width #;(min the-width (string-length conv))))
-                  (when (< (string-length h) (string-length conv))
-                    (set! the-string (string-append the-string "..")))
-                  the-string)
+                  ;; Now, I want to either have the full length of the string, or
+                  ;; I want to limit to the length of the width variable.
+                  (define the-contents
+                    (cond
+                      ;; If the width is greater than the conv string, use the full
+                      ;; conv string.
+                      [(> width (string-length conv))
+                       conv]
+                      ;; If the width is less, then truncate the conv string
+                      [(<= width (string-length conv))
+                       (string-append conv " ...")]))
+                  the-contents)
                 (take row ncols)
                 (take (tbl-columns T) ncols)))
          all-rows))
@@ -166,6 +173,48 @@
   (when (> (count-rows T) nrows)
     (printf "(only ~a of ~a rows shown)" nrows (count-rows T)))
   )
+
+
+(require racket/draw (prefix-in pct: pict))
+
+(define (show-tbl-pict T #:rows [nrows 10] #:width [width 8] #:columns [ncols 0])
+  (define all-rows (get-rows T))
+  (when (zero? ncols)
+    (set! ncols (length (tbl-columns T))))
+  (when (zero? nrows)
+    (set! nrows (count-rows T)))
+
+  (define the-rows (append (list (tbl-columns T)
+                                 (tbl-types T))
+                           (take all-rows nrows)))
+  (define column-count ncols)
+  (define truncated
+    (map (λ (row)
+           (if (zero? ncols)
+               row
+               (take row (min (length row) ncols)))) the-rows))
+  
+  (define picts '())
+  
+  (for (([row index] (in-indexed truncated)))
+    (define font
+      (if (= index 0) ;; header
+          (send the-font-list find-or-create-font 12 'default 'normal 'normal)
+          (send the-font-list find-or-create-font 10 'default 'normal 'normal)))
+    (define color
+      (if (= index 0)
+          (make-object color% #x77 #x88 #x99)
+          (make-object color% #x2f #x4f #x4f)))
+    (define face (cons color font))
+    (for ([item (in-list row)])
+      (set! picts (cons (pct:text (~a item) face) picts))))
+  (let ((p0 (pct:table column-count (reverse picts) pct:lc-superimpose pct:cc-superimpose 15 3)))
+    (pct:cc-superimpose
+     (pct:filled-rounded-rectangle (+ (pct:pict-width p0) 20) (+ (pct:pict-height p0) 20) -0.1
+                               #:draw-border? #f
+                               #:color "LightYellow")
+     p0)))
+
 
 #;(module+ test
   (require rackunit/chk
