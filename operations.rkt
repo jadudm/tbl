@@ -6,6 +6,7 @@
          tbl/util/util
          tbl/util/sqlite
          tbl/reading/gsheet
+         tbl/util/csv
          )
 
 (provide (all-defined-out)
@@ -137,6 +138,30 @@
 ;; FIXME: Must handle case where column does not exist yet.
 ;; FIXME: Must check that the function parameters are
 ;; valid names of columns in the table.
+;; FIXME: After a computation, the type of the column may have changed.
+;; This is a problem. SQlite doesn't care, but at the least... well, at the
+;; least the column types should be updated in the struct.
+
+
+;; FIXME
+;; THis happens in "reading/csv/util or somesuch.
+;; This should be written in ONE PLACE ONLY.
+(define (update-column-type T col)
+  (define vals (pull T col))
+  (define type
+    (cond
+      [(mostly? (maybe integer?) vals) 'integer]
+      [(mostly? (maybe number?) vals) 'real]
+      [(mostly? string? vals) 'text]
+      [else 'blob]))
+  (define colndx (index-of (tbl-columns T) col))
+  (define current-type (list-ref (tbl-types T) colndx))
+  ;; If they're different, update the table.
+  (when (not (equal? current-type type))
+    (set-tbl-types! T (list-set (tbl-types T) colndx type)))
+  T
+  )
+
 (define-syntax (compute stx)
   (syntax-case stx ()
     [(_c T new-row
@@ -164,7 +189,11 @@
                                 ;; Drop the ROWID when applying the lookup
                                 #`(arg (rest row)))))
                         ))))
-           T))]))
+           (update-column-type T new-row)
+           T))
+     
+
+     ]))
   
 (define (remove-ndx n ls)
   (cond

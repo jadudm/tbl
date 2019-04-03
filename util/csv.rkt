@@ -36,7 +36,7 @@
 (define (cleanup-column-names lonames)
   (for/list ([name lonames]
              [ndx (range (length lonames))])
-    ;; (printf "Looking at ~s~n" name)
+    (printf "Looking at ~s~n" name)
     (cond
       ;; If we only have valid characters
       [(regexp-match #px"^[\\w]+$" name)

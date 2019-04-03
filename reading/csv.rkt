@@ -15,6 +15,12 @@
     (strip-trailing-whitespace? . #t)))
 
 ;; FIXME
+;; Pull BOM for UTF-8 from ports.
+ (define (discard-bom p) 
+   (void (regexp-try-match #rx"^\uFEFF" p)))
+
+
+;; FIXME
 ;; This should really handle its inputs better.
 (define (read-csv csv
                   #:header-row? [header-row? true]
@@ -22,6 +28,8 @@
   (cond
     ;; If we get a port
     [(port? csv)
+     ;; Remove BOM
+     (discard-bom csv)
      
      (define csv-reader
        (make-csv-reader-maker spec))
@@ -52,16 +60,21 @@
     ;; If they give us a file or a path
     [(and (or (string? csv) (path? csv))
           (file-exists? csv))
-     (read-csv (open-input-file csv)
+     (define csvp (open-input-file csv))
+     (discard-bom csvp)
+     
+     (read-csv csvp
                #:header-row? header-row?
                #:name name)]
 
     ;; If they give us a URL
     [(and (string? csv)
           (regexp-match #px"^http" csv))
-
+     (define csvp (get-impure-port (string->url csv)))
+     (discard-bom csvp)
+     
      (define lines
-       (port->lines (get-impure-port (string->url csv))))
+       (port->lines csvp))
 
      (cond
        [(check-for-redirect lines)
@@ -69,6 +82,8 @@
         (read-csv new-url #:header-row? header-row? #:name name)
         ]
        [else
-        (read-csv (get-pure-port (string->url csv))
+        (define csvp (get-pure-port (string->url csv)))
+        (discard-bom csvp)
+        (read-csv csvp
                   #:header-row? header-row? #:name name)])
      ]))

@@ -4,8 +4,11 @@
          tbl/operations
          tbl/basics
          tbl/util/util
-         raart)
+         raart
+         math/statistics
+         tbl/calculation)
 
+(provide (all-defined-out))
 
 ;; FIXME
 ;; This is crap. It does not do what I want it to do.

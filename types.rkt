@@ -8,7 +8,11 @@
   #:mutable)
 
 ;; For ease.
+;; And, this is the wrong way to do it.
+;; I should use a struct.
+;; FIXME
 (define none            sql-null)
+(define not-available   sql-null)
 
 ;; FIXME: Need to pick one.
 (define na?             sql-null?)

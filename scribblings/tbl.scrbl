@@ -14,6 +14,7 @@ I wrote the tbl library so that students new to programming would have a princip
 
 tbl was written with consideration for how R scripts typically interact with tabular data (in particular, the tidyverse and dplyr libraries), exploration of Pyret's data tables, as well as texts and literature on exploratory data analysis.
 
+@include-section["what-and-why.scrbl"]
 
 @include-section["creating.scrbl"]
 
