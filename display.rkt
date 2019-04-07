@@ -111,6 +111,9 @@
 
 (require racket/draw (prefix-in pct: pict))
 
+(define (show-full-tbl-pict T)
+  (show-tbl-pict T #:rows 0 #:columns 0))
+
 (define (show-tbl-pict T #:rows [nrows 10] #:width [width 8] #:columns [ncols 0])
   (define all-rows (get-rows T))
   (when (zero? ncols)

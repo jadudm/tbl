@@ -25,7 +25,7 @@
 (define (check-column T col)
   (define type (list-ref (tbl-types T)
                          (index-of (tbl-columns T) col)))
-  (andmap (type->pred? type) (pull T col)))
+  (andmap (type->pred? type) (get-column T col)))
 
 (define (sql-type->racket-type t)
   (case (->symbol t)
@@ -47,7 +47,7 @@
   (define errors? true)
   (for ([c (tbl-columns T)]
         [t lot])
-    (define V* (pull T c))
+    (define V* (get-column T c))
     ;;(printf "v: ~a~n" V*)
     ;;(printf "t: ~a~n" t)
     (define outliers (filter (λ:not (type->pred? t)) V*))
@@ -72,9 +72,25 @@
   (apply + (map (λ (o) (if (and (boolean? o) (equal? o false)) 1 0)) ls)))
 
 (define (count-if T col pred?)
-  (count-true (map pred? (pull T col))))
+  (count-true (map pred? (get-column T col))))
 
+(define (check-has-columns? T . cols)
+  (for ([col cols])
+    (unless (member col (tbl-columns T))
+      (error 'check-has-columns? "Table '~a' is missing column '~a'"
+             (tbl-name T)
+             col)))
+  true)
 
+(define (check-row-count? T n)
+  (unless (equal? (count-rows T) n)
+    (error 'check-row-count "Table has ~a rows, expected ~a" (count-rows T) n))
+  true)
+
+(define (check-column-count? T n)
+  (unless (equal? (count-columns T) n)
+    (error 'check-column-count "Table has ~a columns, expected ~a" (count-columns T) n))
+  true)
    
 
 

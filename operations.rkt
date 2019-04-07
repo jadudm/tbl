@@ -9,38 +9,72 @@
          tbl/util/csv
          )
 
-(provide (all-defined-out)
-         (rename-out [pull get-column])
-         )
+(provide (contract-out
+          [get-column                   (-> tbl? string? list?)]
+          ;; Required arguments, optional arguments, the rest arguments, and the return type
+          [get-columns                  (->* (tbl?) () #:rest (listof string?) (listof list?))]
+          [new-tbl-from-columns         (->* (tbl?) () #:rest (listof string?) tbl?)]
+          [copy-tbl                     (-> tbl? tbl?)]
+          
+          [get-rows                     (-> tbl? (listof list?))]
+          [get-rows-with-id             (-> tbl? (listof list?))]
+          ))
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
-;; PULL
-(define (pull T column)
+;; get-column
+;; Extracts a column as a list.
+(define (get-column T column)
   (define Q (select (ScalarExpr:INJECT ,(->string column))
                     #:from (TableRef:INJECT ,(tbl-name T))))
   (query-list (tbl-db T) Q))
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
-;; PICK
-;; Returns a new table with the named columns.
-(define (pick T . columns)
-  (define Q (format "SELECT ~a FROM ~a"
-                    (apply string-append (add-between (map ->string columns) ","))
-                    (tbl-name T)))
-  ;; (printf "~s~n" Q)
-  (define rows (query-rows (tbl-db T) Q))
-  ;; I want a table to come back. So, create a new table, and insert all the things.
-  (define newT (make-tbl (format "~a_~a" (tbl-name T)
-                                 (apply string-append (add-between columns "_")))
-                         columns
-                         (map (λ (col)
-                                (list-ref (tbl-types T)
-                                          (index-of columns col)))
-                              columns)))
-  (for ([row rows])
+;; get-columns
+;; Extracts multiple columns into a list of lists.
+;; Given no columns, it returns an empty list.
+(define (get-columns T . columns)
+  (map (λ (col)
+         (get-column T col))
+       columns))
+
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; copy-table
+;; Creates a copy of a tbl.
+(define (copy-tbl T)
+  (define newT (make-tbl (tbl-name T)
+                         (tbl-columns T)
+                         (tbl-types T)))  
+  (for ([row (get-rows T)])
     (add-row newT row))
-  newT                           
-  )
+  newT)
+
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; new-table-from-columns
+;; Returns a new table with the named columns.
+(define (new-tbl-from-columns T . columns)
+  (cond
+    ;; If I get no columns, make a copy of the table.
+    [(empty? columns)
+     (copy-tbl T)]
+    ;; Otherwise, create a new table, and copy only the columns given.
+    [else
+     (define Q (format "SELECT ~a FROM ~a"
+                       (apply string-append (add-between (map ->string columns) ","))
+                       (tbl-name T)))
+     ;; (printf "~s~n" Q)
+     (define rows (query-rows (tbl-db T) Q))
+     ;; I want a table to come back. So, create a new table, and insert all the things.
+     (define newT (make-tbl (format "~a_~a" (tbl-name T)
+                                    (apply string-append (add-between columns "_")))
+                            columns
+                            (map (λ (col)
+                                   (list-ref (tbl-types T)
+                                             (index-of columns col)))
+                                 columns)))
+     (for ([row rows])
+       (add-row newT row))
+     newT
+     ]))
 
 
 (define (logop? s)
@@ -121,23 +155,24 @@
 (define-syntax-rule (filter-rows T Q)
   (filter-rows:Q T (quasiquote Q)))
 
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; get-rows
 ;; Gets all the rows as a list of lists.
-;; FIXME: This includes the ROWID. Should
-;; the ROWID be included when communicating back to the user?
-;; For now, I'm going to say NO, because the user didn't
-;; choose to put that value in their data.
 (define (get-rows T)
   (define Q (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
   (define rows (query-rows (tbl-db T) Q))
   (map rest (map vector->list rows)))
 
-;; With ID
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; get-rows-with-id
+;; Gets all the rows as a list of lists, and
+;; leaves the ROWID at the front of every row
 (define (get-rows-with-id T)
   (define Q (select (.*) #:from (TableRef:INJECT ,(tbl-name T))))
   (define rows (query-rows (tbl-db T) Q))
   (map vector->list rows))
 
-(define flavorsT (read-gsheet "https://pult.us/u/flavors"))
+;; (define flavorsT (read-gsheet "https://pult.us/u/flavors"))
 
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
@@ -156,7 +191,7 @@
 ;; THis happens in "reading/csv/util or somesuch.
 ;; This should be written in ONE PLACE ONLY.
 (define (update-column-type T col)
-  (define vals (pull T col))
+  (define vals (get-column T col))
   (define type
     (cond
       [(mostly? (maybe integer?) vals) 'integer]
@@ -209,37 +244,24 @@
 
      ]))
   
-(define (remove-ndx n ls)
-  (cond
-    [(empty? ls) empty]
-    [(zero? n) (remove-ndx (sub1 n) (rest ls))]
-    [else
-     (cons (first ls)
-           (remove-ndx (sub1 n) (rest ls)))]))
-
-(define (remove-column T col)
-  (define ndx (index-of (column-names T) col))
-  (define new-columns (remove-ndx ndx (column-names T)))
-  (define new-types   (remove-ndx ndx (tbl-types T)))
+(define (remove-columns T . cols)
+  (define tossers (map (λ (c) (index-of (column-names T) c)) cols))
+  (define keepers (sort (set-subtract (range 0 (length (tbl-columns T))) tossers) <))
+  (define new-columns (map (λ (ndx) (list-ref (tbl-columns T) ndx)) keepers))
+  (define new-types   (map (λ (ndx) (list-ref (tbl-types   T) ndx)) keepers))
+  ;; Create the new table.
   (define newT (make-tbl (tbl-name T)
                          new-columns
                          new-types))
-  ;; Create a new DB of data.
   (for ([row (get-rows T)])
-    (add-row newT (remove-ndx ndx row)))
-  ;; Close the old connection
+    (add-row newT (map (λ (ndx) (list-ref row ndx)) keepers)))
+
+  ;; Disconnect from the old table.
   (disconnect (tbl-db T))
-  ;; Set the old table to point to the new one.
-  (set-tbl-db! T (tbl-db newT))
-  ;; Update the columns.
-  (set-tbl-columns! T new-columns)
-  (set-tbl-types! T new-types)
-  T)
-                                
-(define (remove-columns T . cols)
-  (for ([c cols])
-    (set! T (remove-column T c)))
-  T)
+  newT)
+
+(define (remove-column T col)
+  (remove-columns T col))
 
 (define (column-swap T orig new)
   (list-set (tbl-columns T)
@@ -318,26 +340,26 @@
  
   (chk
    ;; What are the ages in the flavors GSheet?
-   (pull flavorsT 'age)  '(42 9 5)
+   (get-column flavorsT 'age)  '(42 9 5)
    ;; What if I use a string for the column name?
-   (pull flavorsT "age") '(42 9 5)
+   (get-column flavorsT "age") '(42 9 5)
 
    ;; What are the cities in the tbl?
    ;; Placed the list of cities in a test/data file.
-   (pull citiesT "City") all-cities
+   (get-column citiesT "City") all-cities
    
 
    ;; What is the sum of the latitude degrees?
    ;; This checks that the integers came in as integers.
-   (apply + (pull citiesT "LatD")) 4969
+   (apply + (get-column citiesT "LatD")) 4969
    ;; How many times does Ohio show up in the tbl?
-   (length (filter (λ (s) (equal? s "OH")) (pull citiesT "State"))) 6
+   (length (filter (λ (s) (equal? s "OH")) (get-column citiesT "State"))) 6
    ;; What about Maine? Oh. Maine gets no love.
-   (length (filter (λ (s) (equal? s "ME")) (pull citiesT "State"))) 0
+   (length (filter (λ (s) (equal? s "ME")) (get-column citiesT "State"))) 0
 
    ;; Does pick return a table with fewer columns?
    (count-columns flavorsT) 3
-   (count-columns (pick flavorsT "age" "name")) 2
+   (count-columns (new-tbl-from-columns flavorsT "age" "name")) 2
 
    ;; All the rows where a condition holds true.
    ;; Note that ROWID is not included when we ask for all of the rows.
@@ -361,10 +383,11 @@
    ) ;; end of chk
 
   ;; Try extending the table, and computing new values.
-  (add-column flavorsT "double_age" Integer)
-  (compute flavorsT
-           "double_age"
-           (function (age) (* age 2)))
+  (quietly
+   (add-column flavorsT "double_age" Integer)
+   (compute flavorsT
+            "double_age"
+            (function (age) (* age 2))))
 
   (chk
    ;; FIXME When I handle params that are not named correctly,
@@ -377,7 +400,7 @@
    (count-columns flavorsT) 4
    ;; These do the same thing two different ways.
    (map fourth (get-rows flavorsT)) '(84 18 10)
-   (pull flavorsT "double_age") '(84 18 10)
+   (get-column flavorsT "double_age") '(84 18 10)
    )
     
   (define sdT (read-csv school-shootings))
@@ -386,6 +409,16 @@
    (count-rows sdT) 221
    (count-rows (filter-rows sdT (> killed 0))) 59
    )
+  
+  (define CT1 (read-gsheet "http://bit.ly/cities-csv"))
+  (define CT2 (remove-columns citiesT "NS" "EW" "State"))
+  (chk
+   (count-columns CT1) (length '(LatD LatM LatS NS LonD LonM LonS EW City State))
+   (count-columns CT2) (length '(LatD LatM LatS LonD LonM LonS City))
+   (set=? (map string->symbol (column-names CT1))
+               '(LatD LatM LatS NS LonD LonM LonS EW City State))
+   (set=? (map string->symbol (column-names CT2))
+               '(LatD LatM LatS LonD LonM LonS City)))
   
   ;; Using a bigger table
   #;(begin

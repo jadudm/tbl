@@ -26,7 +26,7 @@
               ndx (length s*)))
      (define name (list-ref s* ndx))
      ;; Ultimately, we use the base function 'pull.'
-     (pull T name)]
+     (get-column T name)]
     ))
 
 
@@ -37,8 +37,8 @@
     [(list (? tbl? T)
            (? string-or-symbol? factors-col)
            (? string-or-symbol? values-col))
-     (define factors (pull T (~a factors-col)))
-     (define values  (pull T (~a values-col)))
+     (define factors (get-column T (~a factors-col)))
+     (define values  (get-column T (~a values-col)))
      (group-with factors values)]
     ;; Given two lists
     [(list (? list? factors) (? list? values))

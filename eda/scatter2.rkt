@@ -54,7 +54,7 @@
      
      (define pts
        (map (λ (x y) (vector x y))
-            (pull T xcol) (pull T ycol)))
+            (get-column T xcol) (get-column T ycol)))
 
      ;; This looks at the values, sets limits slightly outside
      ;; the values the user has in the table.

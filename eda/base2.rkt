@@ -79,10 +79,10 @@
      (extend hi (* rng percent))]))
 
 (define (set-plot-limits! T xcol ycol params)
-  (hash-set! params 'x-min (limit (pull T xcol) - (hash-ref params 'plot-limit-percent-offset)))
-  (hash-set! params 'x-max (limit (pull T xcol) + (hash-ref params 'plot-limit-percent-offset)))
-  (hash-set! params 'y-min (limit (pull T ycol) - (hash-ref params 'plot-limit-percent-offset)))
-  (hash-set! params 'y-max (limit (pull T ycol) + (hash-ref params 'plot-limit-percent-offset)))
+  (hash-set! params 'x-min (limit (get-column T xcol) - (hash-ref params 'plot-limit-percent-offset)))
+  (hash-set! params 'x-max (limit (get-column T xcol) + (hash-ref params 'plot-limit-percent-offset)))
+  (hash-set! params 'y-min (limit (get-column T ycol) - (hash-ref params 'plot-limit-percent-offset)))
+  (hash-set! params 'y-max (limit (get-column T ycol) + (hash-ref params 'plot-limit-percent-offset)))
   params
   )
 
