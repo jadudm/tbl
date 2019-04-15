@@ -2,9 +2,9 @@
 
 (define collection "tbl")
 
-(define scribblings '(("scribblings/tbl.scrbl"
-                       (multi-page)
-                       ("Data Tables, But Smaller"))))
+#;(define scribblings '(("scribblings/tbl.scrbl"
+                         (multi-page)
+                         ("Data Tables, But Smaller"))))
 
 (define deps '("base"
                "db"
