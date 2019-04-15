@@ -329,7 +329,7 @@
 ;                                        
 
 (module+ test
-  (require rackunit/chk
+  (require chk
            tbl/reading/gsheet
            tbl/reading/csv
            tbl/test/files

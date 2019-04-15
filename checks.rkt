@@ -97,7 +97,7 @@
 
 
 #;(module+ test
-  (require rackunit/chk
+  (require chk
            tbl
            tbl/types)
   (define (make-donut-table-1)

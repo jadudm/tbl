@@ -33,7 +33,7 @@
   cleaned)
 
 (module+ test
-  (require rackunit/chk)
+  (require chk)
 
   (chk
    (clean-column-name "3judgedc") "judgedc"

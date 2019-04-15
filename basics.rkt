@@ -184,7 +184,7 @@
 
 
 (module+ test
-  (require rackunit/chk)
+  (require chk)
 
   ;; Creating an empty table.
   (define empty-table (make-tbl))

@@ -12,7 +12,7 @@
                "csv-reading"
                "gregor"
                "rackunit"
-               "rackunit-chk"
+               "chk-lib"
                "sql"))
 
 (define pkg-desc "Documentation for \"tbl\"")

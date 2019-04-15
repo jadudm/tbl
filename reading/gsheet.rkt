@@ -25,7 +25,7 @@
 
 (module+ test
   (require tbl/types
-           rackunit/chk
+           chk
            db sql)
   ;; FIXME
   ;; Most of this gets tested in the operations.
