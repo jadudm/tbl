@@ -1,12 +1,9 @@
 #lang racket
 
-(require math/statistics
-         tbl/basics
+(require tbl/basics
          tbl/types
          tbl/util/util
          tbl/operations
-         tbl/calculation
-         raart
          )
 
 (provide (all-defined-out))
