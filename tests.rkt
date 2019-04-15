@@ -169,7 +169,7 @@
  
   (chk
    ;; What are the ages in the flavors GSheet?
-   (get-column flavorsT 'age)  '(42 9 5)
+   (get-column flavorsT "age")  '(42 9 5)
    ;; What if I use a string for the column name?
    (get-column flavorsT "age") '(42 9 5)
 
