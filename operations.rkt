@@ -24,6 +24,7 @@
 ;; get-column
 ;; Extracts a column as a list.
 (define (get-column T column)
+  
   (define Q (select (ScalarExpr:INJECT ,(->string column))
                     #:from (TableRef:INJECT ,(tbl-name T))))
   (query-list (tbl-db T) Q))

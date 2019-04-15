@@ -31,7 +31,7 @@
   (close-output-port of)
   )
   
-(define (make-tbl* name columns types #:keep [keep false])
+(define (_make_tbl name columns types #:keep [keep false])
   (define conn (void))
   
   ;; Should these be temporary, or in-memory?
@@ -67,18 +67,18 @@
 
 (define make-tbl
   (match-lambda*
-    ['() (make-tbl "coffee" empty empty)]
+    ['() (make-tbl "just_a_tbl" empty empty)]
     [(list (? string-or-symbol? name))
-     (make-tbl* (~a name) empty empty #:keep false)]
+     (_make_tbl (~a name) empty empty #:keep false)]
     [(list (? string-or-symbol? name)
            (? (λ (ls) (andmap string-or-symbol? ls)) columns)
            (? (λ (ls) (andmap string-or-symbol? ls)) types))
-     (make-tbl* name columns types #:keep false)
+     (_make_tbl name columns types #:keep false)
      ]
     ))
 
 (define (make-permanent-tbl name columns types)
-  (make-tbl* name columns types #:keep true))
+  (_make_tbl name columns types #:keep true))
 
 ;; FIXME
 ;; Make sure fields conform to SQL naming conventions
@@ -97,44 +97,49 @@
   (query-exec (tbl-db T) S)
   T)
 
-(define add-row
-  (match-lambda*
-    [(list (? tbl? T)
-           (? list? values))
-     ;; Need to find values that are empty, and convert them to SQL-NULL values.
-     (set! values (map (λ (v) (if (or (equal? v "")
-                                      (none? v)
-                                      (equal? v 'none))
-                                  "NULL"
-                                  v)) values))
-     
-     (define S (format "INSERT INTO ~a ~a VALUES ~a"
-                       (tbl-name T)
-                       (add-between (tbl-columns T) ",")
-                       (add-between (map quote-sql values) ",")))
-     ;;(printf "~s~n" S)
-     ;; Insert the value into the DB.
-     (query-exec (tbl-db T) S)]
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; add-row : table list -> table
+;; Modifies the table to insert values. 
+(define (add-row T vals)
+  (when (vector? vals) (set! vals (vector->list vals)))
+  ;; Need to find values that are empty, and convert them to SQL-NULL values.
+  (let ([cleaned-vals (map (λ (v) (if (or (equal? v "") (none? v))
+                                      "NULL"
+                                      v)) vals)])
+    ;; (printf "add-row cleand-vals: ~a~n" cleaned-vals)
+    (define S (format "INSERT INTO ~a ~a VALUES ~a"
+                      (tbl-name T)
+                      (add-between (tbl-columns T) ",")
+                      (add-between (map quote-sql cleaned-vals) ",")))
+    ;; (printf "add-row: ~a~n" S)
+    ;; Insert the value into the DB.
+    (query-exec (tbl-db T) S))
+  T)
 
-    ;; If I'm given a vector
-    [(list (? tbl? T)
-           (? vector? values))
-     (add-row T (vector->list values))]
-
-    ;; Or, if we have values passed in as parameters.
-    [(list (? tbl? T)
-           values ...)
-     (add-row T values)]
-    ))
-
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; count-columns : table -> number
+;; Returns the number of columns in the table.
 (define (count-columns T)
   (length (tbl-columns T)))
 
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; count-rows : table -> number
+;; Returns the number of rows in the table.
 (define (count-rows T)
   (query-value (tbl-db T) (format "SELECT count(*) FROM ~a" (tbl-name T))))
 
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; column-names : table -> (listof string)
+;; Returns the names of the columns in the table. Same as operating
+;; on the structure directly.
 (define column-names tbl-columns) 
 
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; quietly
+;; Wraps multiple expressions. Returns void.
+;; When working with tables, many expressions return a table. If
+;; you don't want to see the table showing up everywhere, this will
+;; make sure we don't see it. So, it lets one work with tables quietly.
 (define-syntax (quietly stx)
   (syntax-case stx ()
     [(_ bodies ...)
@@ -142,16 +147,16 @@
          bodies ...
          (void)
          )]))
-  
+
+;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
+;; 
 (define lookup
   (match-lambda*
     [(list (? tbl? T)
            (? list? row)
            (? string? col))
      (lookup row
-             (index-of (tbl-columns T)
-                       (format "~a" col)
-                       ))]
+             (index-of (tbl-columns T) (format "~a" col)))]
     [(list (? list? row)
            (? number? col))
      (list-ref row col)]))

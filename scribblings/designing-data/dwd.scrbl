@@ -23,11 +23,18 @@
 @title{Designing Programs with Data}
 
 @abstract{
- What does it mean to systematically engage in the design programs that work with data? The word ``systematic'' suggests a process, clearly articulated and easily understood, that can be used to achieve our goal. My goal is to teach students programming from a principled perspective that they can apply regardless of the language they use; the design of programs that work with data are a subclass of this larger pedagogic challenge. This paper explores the dual notions of designing programs and designing data, so that we might begin to explore the idea of @italic{designing programs with data}.
+ What does it mean to systematically engage in the design programs that work with data? The word ``systematic'' suggests a process, clearly articulated and easily understood, that can be used by students to achieve the goal of working with data programmatically.
 
- In adhering to these principles, I am attempting to lay a foundation for learners that lets them transition from writing run-once, throw-away scripts that work with a data table into learners who are prepared to engage with the process of designing and building the systems of abstractions that are necessary to create new tools and software.
+@;My goal is to teach students programming from a principled perspective that they can apply regardless of the language they use; the design of programs that work with data are a subclass of this larger pedagogic challenge. This paper explores the dual notions of designing programs and designing data, so that we might begin to explore the idea of @italic{designing programs with data}.
+This paper also introduces a guiding set of principles and practices for the educator. In doing so, I am attempting to lay a foundation for educators that ultimately helps transition learners from writing run-once, throw-away scripts that work with a data table into programmers who are prepared to engage with the process of designing and building the systems of abstractions that are necessary to create new tools and software. In doing so, this paper explores the dual notions of designing programs and designing data, so that we might begin to explore the idea of @italic{designing programs with data}
 
 }
+
+@section[#:tag "dwd"]{Designing with Data}
+
+The text @emph{How to Design Programs} introduces the notion of a @bold{design recipe} that guides students in the design and implementation of programs. It encourages students to think about the inputs and outputs to the program they are writing, the types of data those inputs and outputs represent, and the recipe suggests that students should document their understanding in text as well as through functional examples (or tests)---all before writing code. Once they start writing their code, its structure should follow from the structure of the data that their program is operating on.
+
+
 
 @section[#:tag "foundations"]{Foundations}
 
