@@ -14,7 +14,7 @@ Thereafter your "make" is:
 
 (require "basics.rkt"
          "checks.rkt"
-         "display-text.rkt"
+         ;; "display-text.rkt"
          
          "operations.rkt"
          "reading/csv.rkt"
@@ -35,7 +35,7 @@ Thereafter your "make" is:
 (provide (all-from-out
           "basics.rkt"
           "checks.rkt"
-          "display-text.rkt"
+          ;; "display-text.rkt"
           
           "operations.rkt"
           
