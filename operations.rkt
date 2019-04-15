@@ -393,10 +393,10 @@
   (chk
    ;; FIXME When I handle params that are not named correctly,
    ;; this test may need to be updated.
-   #:exn (compute flavorsT
+   #:x (compute flavorsT
                   "double_age"
                   (function (agex) (* agex 2)))
-   exn:fail?
+   " "
    
    (count-columns flavorsT) 4
    ;; These do the same thing two different ways.
