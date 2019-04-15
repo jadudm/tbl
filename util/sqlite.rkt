@@ -27,5 +27,6 @@
     [(equal? o "NULL") "NULL"]
     [(none? o) "NULL"]
     [(symbol? o) (format "'~a'" (symbol->string o))]
-    [(bytes? o) (format "'~a'" (bytes->string/utf-8 o))]
+    [(latin-1? o) (format "'~a'" (bytes->string/latin-1 (latin-1-bytes o)))]
+    [(utf-8? o) (format "'~a'" (bytes->string/utf-8 (utf-8-bytes o)))]
     [(string? o) (format "'~a'" (regexp-replace* #px"'" o "''"))]))

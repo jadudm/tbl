@@ -27,3 +27,6 @@
 (define Blob 'blob)
 (define Real 'real)
 (define Date 'text)
+
+(struct latin-1 (bytes) #:transparent)
+(struct utf-8 (bytes) #:transparent)
