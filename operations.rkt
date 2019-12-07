@@ -21,7 +21,7 @@
 
           [remove-columns               (->* (tbl?) () #:rest (listof string?) tbl?)]
           ))
-(provide filter-rows compute)
+(provide filter-rows compute melt)
 
 ;; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ;
 ;; get-column
