@@ -4,6 +4,7 @@
   tbl
   tbl/eda/base2         
   plot
+  tbl/analysis/data-science-wrapper
   )
 
 (provide histogram histogram-renderer)
@@ -15,18 +16,18 @@
     [else (error 'greater-than "Cannot compare strings and numbers: ~a and ~a" o1 o2)]
     ))
 
-(define (histogram T factC valC)
+(define (histogram T factC valC #:file [filename false])
   (define paramsH plot-defaults)
   ;; (printf "p: ~s~n" paramsH)
   ;; (set-plot-limits! T xcol ycol params)
   
-
+  (define plot-fun (if filename plot-file plot))
   (parameterize ([plot-x-tick-label-anchor  'top-right]
                  [plot-x-tick-label-angle   30])
     (plot (histogram-renderer T factC valC #:params paramsH)
           #:title   (hash-ref paramsH 'title)
-          #:x-label factC
-          #:y-label "Count"
+          #:x-label (or (hash-ref paramsH 'x-label false) factC)
+          #:y-label (or (hash-ref paramsH 'y-label false) "Count")
           
           #:width   (hash-ref paramsH 'width 600)
           #:height  (hash-ref paramsH 'height 400)
